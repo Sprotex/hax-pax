@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY an anoumous author AS IS AND ANY EXPRESS OR IMPLIED
 #include "z80emu.h"
 #include "zxem.h"
 #include "gui.h"
+#include "pax.h"
 
 unsigned char *memory;  // memory space including ROM, screenbuffer, etc.
 unsigned char kbdlines[8];	// keyboard lines, as per http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/keyboard
@@ -81,7 +82,32 @@ zxin (int port)
 void
 zxout (int port, int val)
 {
-  printf ("OUT %X %X\n", port, val);
+  int x,y,color;
+  static int pb=0;
+  //printf ("OUT %X %X\n", port, val);
+  //if (port == 0xFE) fb_box(1,1,9,9,2);
+  
+  if (port == 0xFE) {
+	
+  	color = val&0x07; 
+	if (color !=pb ) {
+	   for(y=0;y<25;y++)  { 
+		for(x=0;x<=320;x++) {
+			putpx(x,y,color);
+			putpx(x,y+192+24,color);
+		} // end X
+	   } // end Y
+	   //for(x=0;x<=320;x++) putpx(x,240,0);
+	   for(x=0;x<32;x++) {
+		for(y=24;y<192+24;y++) {
+			putpx(x,y,color);
+			putpx(x+256+32,y,color);
+		} // end Y
+	   } // end X
+	} // end if
+
+	pb=color;
+  }
 }
 
 /*
@@ -161,10 +187,13 @@ void Dir(void) {
     d = opendir(".");
     if (d) {
       while ((dir = readdir(d)) != NULL) {
-        zxprintf("%s\n", dir->d_name);
+        //zxprintf("%s\n", dir->d_name);
+    	char *ext = strchr(dir->d_name, '.');
+    	if ( ext && (!strcmp(ext, ".sna")) ) zxprintf("%s\n", dir->d_name);
       }
     closedir(d);
     }
+
 }
 
 /* Main loop start */
@@ -303,6 +332,7 @@ main ()
     }
 
   ShowMenu();
+  //putpx(1,1,1);
 
   while (1) {
      	i = inkey();

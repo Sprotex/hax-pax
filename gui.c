@@ -21,17 +21,16 @@
 #include <stdbool.h>
 #include <string.h>
 #include "gui.h"
+#include "zxem.h"
 #include "screens.h"
 //#include "ssd1289.h"
 //#include <plib.h>
 
-
-extern memory[];
 unsigned int flsh_state=0;
 
 // Definitions from pax.c
-extern void putpix(int x, int y, int color);
-
+//extern void putpix(int x, int y, int color);
+//extern void putpx(int x, int y, int color);
 
 // Define Spectrum colors
 //static const 
@@ -182,18 +181,26 @@ unsigned char scr2lcd() {
 
     //return(0);
 }
-
-void DrawBorder(unsigned char border) {
-
-	uint16_t color;
-
-	color = colors[border];
 /*
-	SSD1289_box(0,0,START_Y,MAX_X+1,color);	//top
-	SSD1289_box(MAX_Y-START_Y-1,0,START_Y+2,MAX_X+1,color); //bottom
-	SSD1289_box(START_Y,0,MAX_Y-2*START_Y, START_X,color); 	//right
-	SSD1289_box(START_Y,MAX_X-START_X-1,MAX_Y-2*START_Y,START_X+2,color); 	//left
-*/
+void fb_box(int x, int y, int dx, int dy, int color) {
+
+	int xx,yy;
+
+	for(xx=x;xx<x+dx;xx++) {
+		for(yy=y;yy<y+dy;y++) putpx(xx,yy,color);
+	}
+}
+
+void DrawBorder(int color) {
+
+	//uint16_t color;
+
+	//color = colors[border];
+
+	fb_box(0,0,319,23,color);	//top
+	fb_box(0,239-24,319,24,color); //bottom
+	fb_box(319-32,0,32,239,color); 	//right
+	fb_box(0,0,31,239,color); 	//left
 }
 
 void HandleEvent(void) {
@@ -202,6 +209,7 @@ void HandleEvent(void) {
 		memory[22528+256+i] = manic_attr[i];
 	}
 }
+*/
 
 void ZXCls(void) 
 {
@@ -224,9 +232,9 @@ void ZXChar(char ch, int x, int y, int Font, int ink, int pap )
 	Font = 0;
 	x+=8;
 	for (n=0;n<8;n++) {
-		c = font[(ch-32)*8+n];	// c
+		//c = font[(ch-32)*8+n];	// c
 		//c = znak[n];
-		//(c) = memory[(ch-32)*8+n+15616];	// c
+		c = memory[(ch-32)*8+n+15616];	// c
 		for (m=0;m<8;m++) {                                     // Pixel
 			if ( (c & 0x01) == 0x01 ) {
 				putpix(x,y,ink);

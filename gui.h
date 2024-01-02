@@ -44,7 +44,10 @@
 #define		MAX_Y	239
 
 void ZXPrint(char *S, int x, int y, int Font, int ink, int pap );
-void delay_1us( int delay );
+void fb_box(int x, int y, int dx, int dy, int color);
+
+//void DrawBorder(int color);
+
 /*
 void SSD1289_PMP_init(void);
 void SSD1289_on(void);
@@ -62,4 +65,11 @@ void SSD1289_box( UINT16 x, UINT16 y, UINT16 dx, UINT16 dy, UINT16 color);
 
 void SSD1289_testColours( void );
 void SSD1289_testPixels( void );
+
+static void zxprintchar(char **str, int c);
+static int zxprints(char **out, const char *string, int width, int pad);
+static int zxprinti(char **out, int i, int b, int sg, int width, int pad, int letbase);
+static int zxprint(char **out, int *varg);
+int zxprintf(const char *format, ...);
+
 */

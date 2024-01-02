@@ -11,3 +11,5 @@ void z80lowmemwrite(int addr, int val);
 void screen_init(void);
 
 void putpix(int x, int y, int color);
+void putpx(int x, int y, int color);
+

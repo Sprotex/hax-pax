@@ -326,6 +326,33 @@ putpix (int x, int y, int color )
   fblines[lcdx + lcdy * LCD_HEIGHT] = speccolors[color];
 } 
 
+/*
+ Output pixel out of limited coordinates of ZX paper - to enable border drawing etc.
+*/
+void
+putpx (int x, int y, int color )
+{
+    int lcdx, lcdy;
+
+    if (y < 0 || y > 240)
+	return ;
+
+    if (x > 320)
+	return ;
+
+    if (x > 320)
+	return ;
+    
+    if (color > 8)
+	return ;
+
+    // Recalculate coordinates for current orientation
+    lcdx=320-x;
+    lcdy=240-y;
+
+    fblines[lcdx + lcdy * LCD_HEIGHT] = speccolors[color];
+}
+
 //Set Device Parameter with error checking
 #define ioset(field, argument)\
 {\
