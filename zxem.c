@@ -14,13 +14,20 @@ THIS SOFTWARE IS PROVIDED BY an anoumous author AS IS AND ANY EXPRESS OR IMPLIED
 #include <sys/stat.h>
 #include <string.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #include "z80emu.h"
 #include "zxem.h"
-
+#include "gui.h"
 
 unsigned char *memory;  // memory space including ROM, screenbuffer, etc.
 unsigned char kbdlines[8];	// keyboard lines, as per http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/keyboard
+
+// Directory entries variables
+DIR *d;
+struct dirent *dir;
+
+long dly;
 
 /*
  Z80 in-port
@@ -128,16 +135,39 @@ z80lowmemwrite (int addr, int val)
 #define Z80_SPH          13
 #define Z80_SPL          12
 
-
-
-
-
 #ifdef __arm__
 #define main _init
 #endif
 
+/* Show selection menu */
+void ShowMenu() {
+	//ZXChar('"',0,0,0,0,7);
+       ZXPrint("ZXEM Menu",0,0,0,6,2);
+       ZXPrint("1. Keyboard help",0,8,0,0,7);
+       ZXPrint("2. Save SNApshot",0,16,0,0,7);
+       ZXPrint("3. Load SNApshot",0,24,0,0,7);
+       ZXPrint("4. Load ROM & Reset",0,32,0,0,7);
+       ZXPrint("5. Reset",0,40,0,0,7);
+       ZXPrint("7. Open TAPe",0,48,0,0,7);
+       ZXPrint("8. Poke",0,56,0,0,7);
+       ZXPrint("9. Options",0,64,0,0,7);
+       ZXPrint("0. Exit menu",0,72,0,0,7);
 
+       ZXPrint("Zdravi te PAX! Nativne...",0,100,0,0,7);
+       //zxprintf("%s","Pozdravuje PAX, nie emulator!");
+}
+/* Show directory content */
+void Dir(void) {
+    d = opendir(".");
+    if (d) {
+      while ((dir = readdir(d)) != NULL) {
+        zxprintf("%s\n", dir->d_name);
+      }
+    closedir(d);
+    }
+}
 
+/* Main loop start */
 int
 main ()
 {
@@ -272,7 +302,23 @@ main ()
       // kbdlines[6] = ~(1 << 0);	// enter        
     }
 
+  ShowMenu();
+
+  while (1) {
+     	i = inkey();
+        if (i == 2) {
+		scr2lcd();
+		for(dly=0;dly<20000000;dly++) { asm("nop"); }
+		ZXCls();
+		ShowMenu();
+	}
+	if ( i == 4 ) Dir();
+	if ( (i == 6) || (i == 11) ) 
+/* Emulate ZX Spectrum */
+{	
   cycles = 0;
+
+  if (i == 6) { state.pc = 0x0000; }
 
   while (1)
     {
@@ -296,4 +342,9 @@ main ()
     }
 
   return 0;
+}
+/* End of emulation option */
+
+	if (i == 223) return 0;
+  }
 }

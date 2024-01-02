@@ -81,6 +81,54 @@ void printscreen()
 }
 
 
+
+/*
+ Handle Linux keyboard events naturally (not for emulator)
+*/
+int
+inkey()
+{
+  struct input_event ev0;
+  int rd;
+  rd = read (keypad_fd, &ev0, sizeof (struct input_event));
+  if (rd < sizeof (struct input_event))
+    return 0;
+
+  if (ev0.type != 1)
+    return -1;
+
+
+  // some paxes return first event with weird value ... discard this one
+  if (ev0.value != 0 && ev0.value != 1)
+    return -1;
+
+   printf("Key code: %d \n",ev0.code);
+
+   if (ev0.value ==1 ) { 
+  	return ev0.code;
+   } else {
+	return 0;
+   }
+
+/* Return codes:
+  2 - key 1
+  3 - key 2
+  4 - key 3
+  5 - key 4
+  6 - key 5
+  7 - key 6
+  8 - key 7
+  9 - key 8
+ 10 - key 9
+ 11 - key 0
+ 69 - Alpha
+102 - Func 
+ 14 - Back (YELLOW)
+ 28 - Enter (GREEN)
+223 - ESC (red)
+*/
+}
+
 /*
  Handle Linux input events. this maps keystrokes to ZX spectrum keylines
 */

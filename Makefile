@@ -19,7 +19,7 @@ z80emu.o: z80emu.c z80emu.h z80config.h z80user.h \
 
 OBJECT_FILES = zxem.o z80emu.o 
 #OBJECT_FILES += x11.o
-OBJECT_FILES += pax.o
+OBJECT_FILES += pax.o gui.c
 
 zxem: $(OBJECT_FILES)
 #	$(CC) $(OBJECT_FILES) -o $@ $(LIBS)
