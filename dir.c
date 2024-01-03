@@ -8,7 +8,15 @@ int main(int argc, char *argv[])
 int n=0, i=0;
 DIR *d;
 struct dirent *dir;
-d = opendir(argv[1]);
+
+printf("Argc: %d\n",argc);
+
+if (argc<2) {
+	d = opendir(".");
+} else {
+	printf("Dir:  %s\n",argv[1]);
+	d = opendir(argv[1]);
+}
 
 //Determine the number of files
 while((dir = readdir(d)) != NULL) {
@@ -33,10 +41,11 @@ while((dir = readdir(d)) != NULL) {
         i++;
     }
 }
-rewinddir(d);
+//rewinddir(d);
+closedir(d);
 
 for(i=0; i<=n; i++)
     printf("%s\n", filesList[i]);
-closedir(d);
+
 return 0;
 }
