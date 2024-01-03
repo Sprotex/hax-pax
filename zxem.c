@@ -189,7 +189,7 @@ void ShowMenu() {
 /* Cache directory content match the snap files and populate the list */
 void Dir(void) {
     
-    int n=0,i=0,m;
+    int n=0,i=0,m,cnt;
     char *ext;
 
     d = opendir(".");
@@ -227,7 +227,10 @@ void Dir(void) {
     char fname[30];
     char fnum[3];
 
-    for(i=0;i<10;i++) {
+    cnt = n;
+    if (cnt>10) cnt=10;
+
+    for(i=0;i<cnt;i++) {
 	    sprintf(fnum, "%2d", i);
 	    ZXPrint(fnum,0,80+i*8,0,0,7);
 
