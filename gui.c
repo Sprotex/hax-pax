@@ -155,10 +155,11 @@ unsigned char scr2lcd(int w) {
                     if (std) {                                              // Handle attributes as ULA
                         ink = a & 0x07;
                         pap = ( a >> 3 ) & 0x07;
-                        if ( (a & 0x40) == 0x40 ) {  // Bright1 - not for black (0)
-                            ink += 8;
-                            pap += 8;
-                        }
+			// Na PAXe nemame bright :(
+                        //if ( (a & 0x40) == 0x40 ) {  // Bright1 - not for black (0)
+                        //    ink += 8;
+                        //    pap += 8;
+                        //}
 						//in = colors[ink];
 						//pa = colors[pap];
                     } else {                                                // Otherwise treat as ULA+
