@@ -27,9 +27,11 @@ unsigned char kbdlines[8];	// keyboard lines, as per http://www.breakintoprogram
 // Directory entries variables
 DIR *d;
 struct dirent *dir;
+//char *filesList[n];
 
 long dly;
 
+Z80_STATE state;
 /*
  Z80 in-port
 */
@@ -168,6 +170,8 @@ z80lowmemwrite (int addr, int val)
 /* Show selection menu */
 void ShowMenu() {
 	//ZXChar('"',0,0,0,0,7);
+       zxout(254,7);
+       ZXCls();
        ZXPrint("ZXEM Menu",0,0,0,6,2);
        ZXPrint("1. Keyboard help",0,8,0,0,7);
        ZXPrint("2. Save SNApshot",0,16,0,0,7);
@@ -182,50 +186,92 @@ void ShowMenu() {
        ZXPrint("Zdravi te PAX! Nativne...",0,100,0,0,7);
        //zxprintf("%s","Pozdravuje PAX, nie emulator!");
 }
-/* Show directory content */
+/* Cache directory content match the snap files and populate the list */
 void Dir(void) {
+    
+    int n=0,i=0,m;
+    char *ext;
+
     d = opendir(".");
     if (d) {
       while ((dir = readdir(d)) != NULL) {
         //zxprintf("%s\n", dir->d_name);
-    	char *ext = strchr(dir->d_name, '.');
-    	if ( ext && (!strcmp(ext, ".sna")) ) zxprintf("%s\n", dir->d_name);
+    	ext = strchr(dir->d_name, '.');
+    	if ( ext && (!strcmp(ext, ".sna")) ) {
+			printf("%s\n", dir->d_name);
+			n++;
+	}
+
       }
-    closedir(d);
+      rewinddir(d);
+
+      char *fileList[n];
+
+      while ((dir = readdir(d)) != NULL) {
+	ext = strchr(dir->d_name, '.');
+
+    	if ( ext && (!strcmp(ext, ".sna")) ) {
+		fileList[i] = (char*) malloc (strlen(dir->d_name)+1);
+	        strncpy (fileList[i],dir->d_name, strlen(dir->d_name) );	 
+		i++;
+	}
+      }
+    //for(i=0; i<=n; i++)
+    //	      printf("%s\n", filesList[i]);
+    
+    ZXCls();
+
+    ZXPrint("Select SNA to load:",0,0,0,6,2);
+
+    ZXPrint("<< FUNC, ALPHA >>, [0-9] Select",0,16,0,0,7);
+    char fname[30];
+    char fnum[3];
+
+    for(i=0;i<10;i++) {
+	    sprintf(fnum, "%2d", i);
+	    ZXPrint(fnum,0,80+i*8,0,0,7);
+
+	    strncpy (fname, fileList[i],strlen(fileList[i]));
+	    ZXPrint(fname,24,80+i*8,0,0,7);
+	    for(m=0;m<30;m++) fname[m]='\0';
+	    //fname[0]='\0';
     }
 
+    i = inkey();
+    while (i <= 0) i = inkey();
+    if (i>1 && i<12) {
+	   if (i==11) {
+		  i=0;
+	   } else {
+		  i--;
+	   }
+	   //fname = fileList[i];
+	   strncpy (fname, fileList[i],strlen(fileList[i]));
+	   ZXPrint(fname,24,80+i*8,0,4,0);
+	   LoadSNA(fname);
+	   ZXPrint("SNAP loaded, press 0 to start",24,40,0,1,5);
+
+    } 
+   } // End of select
+
+    closedir(d);
 }
 
-/* Main loop start */
-int
-main ()
-{
-  char *romfilename;
-  char *snafilename;
-  int romsize;
-  int fd;
-  int cycles;
-  int i;
-  struct stat sb;
-  char *snap;
-  Z80_STATE state;
+/* Load snap from given filename */
+int LoadSNA(char *name) {
 
   unsigned char *snadata;
   int snasize;
 
-  romfilename = "zx48.rom";
-  snafilename = "manic.sna";
-// snafilename = "horace.sna";
-// snafilename = "ThroTheWall.sna";
-// snafilename = "Uridium.sna";
-//   snafilename = "diag.sna";
-//   snafilename = "48z80ful.sna";
+  char *snap;
+  int fd;
 
   snasize = 0;
   snadata = 0;
-  if (snafilename)
+
+  if (name)
     {
-      fd = open (snafilename, O_RDONLY);
+      fd = open (name, O_RDONLY);
       //fstat(fd,&sb);
       snasize = 49179;		//sb.st_size;
       snadata = (unsigned char *) malloc (snasize);
@@ -238,31 +284,6 @@ main ()
 	printf ("sna error\n");
       close (fd);
     }
-
-
-  memory = (unsigned char *) malloc (0x10000);
-  memset (memory, 0, 0x10000);
-
-  for (i = 0; i < 8; i++)
-    kbdlines[i] = 0x1f;
-
-
-  fd = open (romfilename, O_RDONLY);
-  //fstat(fd,&sb);
-  romsize = 16384;		//sb.st_size;
-  if (read (fd, memory, romsize) != romsize || romsize == 0)
-    {
-      printf ("rom error\n");
-      exit (1);
-    }
-  close (fd);
-
-
-  screen_init ();
-
-  Z80Reset (&state);
-
-  state.pc = 0x0000;
 
   if (snadata)
     {
@@ -319,17 +340,57 @@ main ()
       state.registers.word[Z80_SP]++; 
       state.pc += 256*memory[state.registers.word[Z80_SP]];
       state.registers.word[Z80_SP]++; 
-    
-
-/*
-        unsigned short  alternates[4];
-
-        int             i, r, pc, iff1, iff2, im; 
-        */
-
-      // simulate enter
-      // kbdlines[6] = ~(1 << 0);	// enter        
     }
+}
+
+/* Main loop start */
+int
+main ()
+{
+  char *romfilename;
+  //char *snafilename;
+  int romsize;
+  int fd;
+  int cycles;
+  int i;
+  struct stat sb;
+  //char *snap;
+//  Z80_STATE state;
+
+//  unsigned char *snadata;
+// int snasize;
+
+  romfilename = "zx48.rom";
+//  snafilename = "manic.sna";
+// snafilename = "horace.sna";
+// snafilename = "ThroTheWall.sna";
+// snafilename = "Uridium.sna";
+//   snafilename = "diag.sna";
+//   snafilename = "48z80ful.sna";
+
+  memory = (unsigned char *) malloc (0x10000);
+  memset (memory, 0, 0x10000);
+
+  for (i = 0; i < 8; i++)
+    kbdlines[i] = 0x1f;
+
+
+  fd = open (romfilename, O_RDONLY);
+  //fstat(fd,&sb);
+  romsize = 16384;		//sb.st_size;
+  if (read (fd, memory, romsize) != romsize || romsize == 0)
+    {
+      printf ("rom error\n");
+      exit (1);
+    }
+  close (fd);
+
+
+  screen_init ();
+
+  Z80Reset (&state);
+
+  state.pc = 0x0000;
 
   ShowMenu();
   //putpx(1,1,1);
