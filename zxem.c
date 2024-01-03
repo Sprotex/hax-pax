@@ -396,12 +396,11 @@ main ()
   state.pc = 0x0000;
 
   ShowMenu();
-  //putpx(1,1,1);
 
   while (1) {
      	i = inkey();
         if (i == 2) {
-		scr2lcd();
+		scr2lcd(0);
 		for(dly=0;dly<20000000;dly++) { asm("nop"); }
 		ZXCls();
 		ShowMenu();
@@ -410,6 +409,8 @@ main ()
 	if ( (i == 6) || (i == 11) ) 
 /* Emulate ZX Spectrum */
 {	
+  scr2lcd(1);
+
   cycles = 0;
 
   if (i == 6) { state.pc = 0x0000; }

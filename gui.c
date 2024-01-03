@@ -122,7 +122,7 @@ void Lscr2lcd(unsigned char s, unsigned int d) {
 
 
 // Show Spectrum screen on the display
-unsigned char scr2lcd() {
+unsigned char scr2lcd(int w) {
     unsigned char a,ink,pap,pal;
     uint16_t in=0,pa=7;
     unsigned char c;
@@ -131,7 +131,8 @@ unsigned char scr2lcd() {
     
     uint16_t palette64[64];
 	unsigned int line[256];
-   
+    // if w is 0 it shows help screen, otherwise it shows screen in current memory[]
+    
     x=START_X;
     y=START_Y;  
 
@@ -139,8 +140,17 @@ unsigned char scr2lcd() {
         for (i=0;i<8;i++) {          // Line in third
             for (k=0;k<8;k++) {      // Microline
                 for (l=32;l>0;l--) { // Byte
-                    c = screens[j * 2048 + k * 256 + i * 32 + (l-1)];        // Pixel byte
-                    a = screens[6144 + j * 256 + i * 32 + (l-1)];            // Attr byte
+                    if (w==0) {
+			    c = screens[j * 2048 + k * 256 + i * 32 + (l-1)];        // Pixel byte
+		    } else {
+			    c = memory[16384 + j * 2048 + k * 256 + i * 32 + (l-1)];
+		    }
+
+                    if (w==0) {
+			    a = screens[6144 + j * 256 + i * 32 + (l-1)];            // Attr byte
+		    } else {
+			    a = memory[22528 + j * 256 + i * 32 + (l-1)];            // Attr byte
+		    }
 
                     if (std) {                                              // Handle attributes as ULA
                         ink = a & 0x07;
