@@ -240,12 +240,15 @@ void ZXChar(char ch, int x, int y, int Font, int ink, int pap )
 
 	unsigned char m,n,c;
  
-	Font = 0;
+	//Font = 0;
 	x+=8;
 	for (n=0;n<8;n++) {
-		//c = font[(ch-32)*8+n];	// c
 		//c = znak[n];
-		c = memory[(ch-32)*8+n+15616];	// c
+		if (Font == 0 ) {
+			c = memory[(ch-32)*8+n+15616];	// c
+		} else {
+			c = font[(ch-32)*8+n];
+		}
 		for (m=0;m<8;m++) {                                     // Pixel
 			if ( (c & 0x01) == 0x01 ) {
 				putpix(x,y,ink);

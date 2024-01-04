@@ -163,7 +163,7 @@ event ()
   switch (ev0.code)
     {
     case 223: // X / ESC key
-      exit (1);  // END of emulator
+      emurun=0; //exit (1);  // END of emulator
       break;
       
     case 2:  //1

@@ -24,6 +24,9 @@ THIS SOFTWARE IS PROVIDED BY an anoumous author AS IS AND ANY EXPRESS OR IMPLIED
 unsigned char *memory;  // memory space including ROM, screenbuffer, etc.
 unsigned char kbdlines[8];	// keyboard lines, as per http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/keyboard
 
+int emurun=0;		// Defines the status of emulation: 0=stopped, 1=running
+int fntsel=0;		// Select font
+
 // Directory entries variables
 DIR *d;
 struct dirent *dir;
@@ -100,7 +103,7 @@ zxout (int port, int val)
 		} // end X
 	   } // end Y
 	   //for(x=0;x<=320;x++) putpx(x,240,0);
-	   for(x=0;x<32;x++) {
+	   for(x=0;x<33;x++) {
 		for(y=24;y<192+24;y++) {
 			putpx(x,y,color);
 			putpx(x+256+32,y,color);
@@ -172,18 +175,18 @@ void ShowMenu() {
 	//ZXChar('"',0,0,0,0,7);
        zxout(254,7);
        ZXCls();
-       ZXPrint("ZXEM Menu",0,0,0,6,2);
-       ZXPrint("1. Keyboard help",0,8,0,0,7);
-       ZXPrint("2. Save SNApshot",0,16,0,0,7);
-       ZXPrint("3. Load SNApshot",0,24,0,0,7);
-       ZXPrint("4. Load ROM & Reset",0,32,0,0,7);
-       ZXPrint("5. Reset",0,40,0,0,7);
-       ZXPrint("7. Open TAPe",0,48,0,0,7);
-       ZXPrint("8. Poke",0,56,0,0,7);
-       ZXPrint("9. Options",0,64,0,0,7);
-       ZXPrint("0. Exit menu",0,72,0,0,7);
+       ZXPrint("ZXEM Menu",0,0,fntsel,6,2);
+       ZXPrint("1. Keyboard help",0,8,fntsel,0,7);
+       ZXPrint("2. Save SNApshot",0,16,fntsel,0,7);
+       ZXPrint("3. Load SNApshot",0,24,fntsel,0,7);
+       ZXPrint("4. Load ROM & Reset",0,32,fntsel,0,7);
+       ZXPrint("5. Reset",0,40,fntsel,0,7);
+       ZXPrint("7. Open TAPe",0,48,fntsel,0,7);
+       ZXPrint("8. Poke",0,56,fntsel,0,7);
+       ZXPrint("9. Options",0,64,fntsel,0,7);
+       ZXPrint("0. Exit menu",0,72,fntsel,0,7);
 
-       ZXPrint("Zdravi te PAX! Nativne...",0,100,0,0,7);
+       //ZXPrint("Zdravi te PAX! Nativne...",0,100,0,0,7);
        //zxprintf("%s","Pozdravuje PAX, nie emulator!");
 }
 /* Cache directory content match the snap files and populate the list */
@@ -221,9 +224,9 @@ void Dir(void) {
     
     ZXCls();
 
-    ZXPrint("Select SNA to load:",0,0,0,6,2);
+    ZXPrint("Select SNA to load:",0,0,fntsel,6,2);
 
-    ZXPrint("<< FUNC, ALPHA >>, [0-9] Select",0,16,0,0,7);
+    ZXPrint("<< FUNC, ALPHA >>, [0-9] Select",0,16,fntsel,0,7);
     char fname[30];
     char fnum[3];
 
@@ -232,10 +235,10 @@ void Dir(void) {
 
     for(i=0;i<cnt;i++) {
 	    sprintf(fnum, "%2d", i);
-	    ZXPrint(fnum,0,80+i*8,0,0,7);
+	    ZXPrint(fnum,0,80+i*8,fntsel,0,7);
 
 	    strncpy (fname, fileList[i],strlen(fileList[i]));
-	    ZXPrint(fname,24,80+i*8,0,0,7);
+	    ZXPrint(fname,24,80+i*8,fntsel,0,7);
 	    for(m=0;m<30;m++) fname[m]='\0';
 	    //fname[0]='\0';
     }
@@ -250,9 +253,9 @@ void Dir(void) {
 	   }
 	   //fname = fileList[i];
 	   strncpy (fname, fileList[i],strlen(fileList[i]));
-	   ZXPrint(fname,24,80+i*8,0,4,0);
+	   ZXPrint(fname,24,80+i*8,fntsel,4,0);
 	   LoadSNA(fname);
-	   ZXPrint("SNAP loaded, press 0 to start",24,40,0,1,5);
+	   ZXPrint("SNAP loaded, press 0 to start",24,40,fntsel,1,5);
 
     } 
    } // End of select
@@ -388,6 +391,8 @@ main ()
     }
   close (fd);
 
+  emurun=0;
+  fntsel=1;
 
   screen_init ();
 
@@ -400,8 +405,10 @@ main ()
   while (1) {
      	i = inkey();
         if (i == 2) {
+		zxout(254,0);
 		scr2lcd(0);
 		for(dly=0;dly<20000000;dly++) { asm("nop"); }
+		zxout(254,7);
 		ZXCls();
 		ShowMenu();
 	}
@@ -414,8 +421,9 @@ main ()
   cycles = 0;
 
   if (i == 6) { state.pc = 0x0000; }
+  emurun=1;
 
-  while (1)
+  while (emurun==1)
     {
       cycles += Z80Emulate (&state, 200 /*cycles */ , NULL);
       int p;
@@ -436,10 +444,22 @@ main ()
 	}
     }
 
-  return 0;
+  //return 0;
+  ZXCls();
+  ShowMenu();
+  i=0;
 }
 /* End of emulation option */
 
-	if (i == 223) return 0;
+	if (i == 223) {
+		i = 0;
+		ZXPrint("Sure to exit? Green to confirm",0,184,fntsel,6,2);
+
+		while (i <= 0) {
+			i = inkey();
+			if (i == 28) exit (1);
+		}
+		//return 0;
+  	}
   }
 }

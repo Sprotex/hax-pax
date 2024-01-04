@@ -3,6 +3,8 @@ extern unsigned char *memory;
 
 extern unsigned char kbdlines[8];
 
+extern int emurun;
+
 int zxin(int port);
 void zxout(int port, int val);
 
