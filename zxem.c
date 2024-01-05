@@ -89,10 +89,11 @@ zxout (int port, int val)
 {
   int x,y,color;
   static int pb=0;
+  int ba=0;	// Border active?
   //printf ("OUT %X %X\n", port, val);
   //if (port == 0xFE) fb_box(1,1,9,9,2);
   
-  if (port == 0xFE) {
+  if (port == 0xFE && ba != 1) {
 	
   	color = val&0x07; 
 	if (color !=pb ) {
@@ -189,10 +190,20 @@ void ShowMenu() {
        //ZXPrint("Zdravi te PAX! Nativne...",0,100,0,0,7);
        //zxprintf("%s","Pozdravuje PAX, nie emulator!");
 }
+
+/* Show options */
+void ShowOpts() {
+       ZXCls();
+       ZXPrint("ZXEM Options",0,0,fntsel,6,2);
+       ZXPrint("1. Font width: ",0,8,fntsel,0,7);
+       ZXPrint("2. Screen orientation: ",0,16,fntsel,0,7);
+       ZXPrint("3. Border emulation: ",0,24,fntsel,0,7);
+}
+
 /* Cache directory content match the snap files and populate the list */
 void Dir(void) {
     
-    int n=0,i=0,m,cnt;
+    int n=0,i=0,x,m,cnt,cur;
     char *ext;
 
     d = opendir(".");
@@ -223,28 +234,45 @@ void Dir(void) {
     //	      printf("%s\n", filesList[i]);
     
     ZXCls();
-
     ZXPrint("Select SNA to load:",0,0,fntsel,6,2);
-
     ZXPrint("<< FUNC, ALPHA >>, [0-9] Select",0,16,fntsel,0,7);
+    
     char fname[30];
     char fnum[3];
 
     cnt = n;
-    if (cnt>10) cnt=10;
+    cur = 0;
 
+    for(m=0;m<30;m++) fname[m]='\0';
+    /* Show one page of files if list is longer than 10 entries */
+    if (cnt>10) cnt=10;
+    for(x=0;x<cnt;x++) {
+	    sprintf(fnum, "%2d", x);
+	    ZXPrint(fnum,0,80+x*8,fntsel,0,7);
+
+	    strncpy (fname, fileList[x+cur],strlen(fileList[x+cur]));
+	    ZXPrint(fname,24,80+x*8,fntsel,0,7);
+	    for(m=0;m<30;m++) fname[m]='\0';
+    }
+
+    sprintf(fname,"Entry: %d of %d",cur,n);
+    ZXPrint(fname,0,192-8,fntsel,5,1);
+    for(m=0;m<30;m++) fname[m]='\0';
+
+    i = inkey();
+    while (1) {
+	    i = inkey();
+      
+/*
+    if (cnt>10) cnt=10;
     for(i=0;i<cnt;i++) {
 	    sprintf(fnum, "%2d", i);
 	    ZXPrint(fnum,0,80+i*8,fntsel,0,7);
 
-	    strncpy (fname, fileList[i],strlen(fileList[i]));
+	    strncpy (fname, fileList[i+cur],strlen(fileList[i+cur]));
 	    ZXPrint(fname,24,80+i*8,fntsel,0,7);
 	    for(m=0;m<30;m++) fname[m]='\0';
-	    //fname[0]='\0';
-    }
-
-    i = inkey();
-    while (i <= 0) i = inkey();
+    }*/
     if (i>1 && i<12) {
 	   if (i==11) {
 		  i=0;
@@ -252,12 +280,56 @@ void Dir(void) {
 		  i--;
 	   }
 	   //fname = fileList[i];
-	   strncpy (fname, fileList[i],strlen(fileList[i]));
+	   strncpy (fname, fileList[i+cur],strlen(fileList[i+cur]));
 	   ZXPrint(fname,24,80+i*8,fntsel,4,0);
 	   LoadSNA(fname);
 	   ZXPrint("SNAP loaded, press 0 to start",24,40,fntsel,1,5);
+	   break;
 
-    } 
+    }
+    if (i == FUNC) {
+	    if (cur >= 10) cur-=10;
+
+    if (n-cur >= 10 ) cnt=10;
+
+    ZXCls();
+    ZXPrint("Select SNA to load:",0,0,fntsel,6,2);
+    ZXPrint("<< FUNC, ALPHA >>, [0-9] Select",0,16,fntsel,0,7);
+    if (cnt>10) cnt=10;
+    for(x=0;x<cnt;x++) {
+	    sprintf(fnum, "%2d", x);
+	    ZXPrint(fnum,0,80+x*8,fntsel,0,7);
+
+	    strncpy (fname, fileList[x+cur],strlen(fileList[x+cur]));
+	    ZXPrint(fname,24,80+x*8,fntsel,0,7);
+	    for(m=0;m<30;m++) fname[m]='\0';
+    }
+    sprintf(fname,"Entry: %d of %d",cur,n);
+    ZXPrint(fname,0,192-8,fntsel,5,1);
+    for(m=0;m<30;m++) fname[m]='\0';
+    }
+
+    if (i == ALPHA) {
+	    if ((cur/10) < (n/10)) cur+=10;
+    
+    if ((cur/10) == (n/10)) cnt=n%10;
+
+    ZXCls();
+    ZXPrint("Select SNA to load:",0,0,fntsel,6,2);
+    ZXPrint("<< FUNC, ALPHA >>, [0-9] Select",0,16,fntsel,0,7);
+    for(x=0;x<cnt;x++) {
+	    sprintf(fnum, "%2d", x);
+	    ZXPrint(fnum,0,80+x*8,fntsel,0,7);
+
+	    strncpy (fname, fileList[x+cur],strlen(fileList[x+cur]));
+	    ZXPrint(fname,24,80+x*8,fntsel,0,7);
+	    for(m=0;m<30;m++) fname[m]='\0';
+    }
+    sprintf(fname,"Entry: %d of %d",cur,n);
+    ZXPrint(fname,0,192-8,fntsel,5,1);
+    for(m=0;m<30;m++) fname[m]='\0';
+    }
+    } // End of while
    } // End of select
 
     closedir(d);
@@ -349,16 +421,35 @@ int LoadSNA(char *name) {
     }
 }
 
+/* Load default rom file */
+int LoadROM(void) {
+
+  int romsize;
+  char *romfilename;
+  romfilename = "zx48.rom";
+
+  int fd;
+  fd = open (romfilename, O_RDONLY);
+  //fstat(fd,&sb);
+  romsize = 16384;		//sb.st_size;
+  if (read (fd, memory, romsize) != romsize || romsize == 0)
+    {
+      printf ("rom error\n");
+      exit (1);
+    }
+  close (fd);
+}
+
 /* Main loop start */
 int
 main ()
 {
-  char *romfilename;
+  //char *romfilename;
   //char *snafilename;
-  int romsize;
+  //int romsize;
   int fd;
   int cycles;
-  int i;
+  int i,r;
   struct stat sb;
   //char *snap;
 //  Z80_STATE state;
@@ -366,7 +457,7 @@ main ()
 //  unsigned char *snadata;
 // int snasize;
 
-  romfilename = "zx48.rom";
+//  romfilename = "zx48.rom";
 //  snafilename = "manic.sna";
 // snafilename = "horace.sna";
 // snafilename = "ThroTheWall.sna";
@@ -377,24 +468,16 @@ main ()
   memory = (unsigned char *) malloc (0x10000);
   memset (memory, 0, 0x10000);
 
+  // Init keyboard and emulate no key press initially
   for (i = 0; i < 8; i++)
     kbdlines[i] = 0x1f;
-
-
-  fd = open (romfilename, O_RDONLY);
-  //fstat(fd,&sb);
-  romsize = 16384;		//sb.st_size;
-  if (read (fd, memory, romsize) != romsize || romsize == 0)
-    {
-      printf ("rom error\n");
-      exit (1);
-    }
-  close (fd);
 
   emurun=0;
   fntsel=1;
 
   screen_init ();
+
+  r = LoadROM();
 
   Z80Reset (&state);
 
@@ -415,7 +498,9 @@ main ()
 	if ( i == 4 ) Dir();
 	if ( (i == 6) || (i == 11) ) 
 /* Emulate ZX Spectrum */
-{	
+{
+  r = LoadROM();
+
   scr2lcd(1);
 
   cycles = 0;
