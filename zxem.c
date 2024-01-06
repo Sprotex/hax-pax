@@ -255,7 +255,7 @@ void Dir(void) {
 	    for(m=0;m<30;m++) fname[m]='\0';
     }
 
-    sprintf(fname,"Entry: %d of %d",cur,n);
+    sprintf(fname,"Entry: %d-%d of %d",cur+1,cur+10,n);
     ZXPrint(fname,0,192-8,fntsel,5,1);
     for(m=0;m<30;m++) fname[m]='\0';
 
@@ -304,7 +304,7 @@ void Dir(void) {
 	    ZXPrint(fname,24,80+x*8,fntsel,0,7);
 	    for(m=0;m<30;m++) fname[m]='\0';
     }
-    sprintf(fname,"Entry: %d of %d",cur,n);
+    sprintf(fname,"Entry: %d-%d of %d",cur+1,cur+10,n);
     ZXPrint(fname,0,192-8,fntsel,5,1);
     for(m=0;m<30;m++) fname[m]='\0';
     }
@@ -325,7 +325,7 @@ void Dir(void) {
 	    ZXPrint(fname,24,80+x*8,fntsel,0,7);
 	    for(m=0;m<30;m++) fname[m]='\0';
     }
-    sprintf(fname,"Entry: %d of %d",cur,n);
+    sprintf(fname,"Entry: %d-%d of %d",cur+1,(cur+10 > n) ? n : cur+10,n);
     ZXPrint(fname,0,192-8,fntsel,5,1);
     for(m=0;m<30;m++) fname[m]='\0';
     }
@@ -499,8 +499,8 @@ main ()
 	if ( (i == 6) || (i == 11) ) 
 /* Emulate ZX Spectrum */
 {
-  r = LoadROM();
-
+  r = LoadROM();	// Load ROM again in case it was accidentialy overwritten
+ 
   scr2lcd(1);
 
   cycles = 0;
@@ -538,7 +538,7 @@ main ()
 
 	if (i == 223) {
 		i = 0;
-		ZXPrint("Sure to exit? Green to confirm",0,184,fntsel,6,2);
+		ZXPrint("Sure to exit? Green to confirm",0,184,fntsel,4,0);
 
 		while (i <= 0) {
 			i = inkey();

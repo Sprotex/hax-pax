@@ -112,7 +112,7 @@ extern volatile int fdcsync; // variable for syncing with NOP injection...
 #define Z80_WRITE_BYTE(address, x)                                      \
 {   \
    if (address < 0x5B00) z80lowmemwrite((address), (x)); \
-   memory[address] = (x);	\
+   if (address >= 0x4000) memory[address] = (x);	\
 }
 
 #define Z80_WRITE_WORD(address, x)                                      \
