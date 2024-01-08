@@ -118,9 +118,6 @@ void Lscr2lcd(unsigned char s, unsigned int d) {
     }
 }
 
-
-
-
 // Show Spectrum screen on the display
 unsigned char scr2lcd(int w) {
     unsigned char a,ink,pap,pal;
@@ -191,6 +188,82 @@ unsigned char scr2lcd(int w) {
     }
 
     //return(0);
+}
+
+
+// Show Spectrum screen on the display
+unsigned char kbd2lcd(int w) {
+    unsigned char a,ink,pap,pal;
+    uint16_t in=0,pa=7;
+    unsigned char c;
+    unsigned char std=1;
+    unsigned int x,y,i,j,k,l,m,pos;
+    
+    uint16_t palette64[64];
+	unsigned int line[256];
+    // if w is 0 it shows help screen, otherwise it shows screen in current memory[]
+    
+    x=START_X;
+    y=START_Y;  
+
+    for (j=0;j<3;j++) {              // Screen "third"
+        for (i=0;i<8;i++) {          // Line in third
+            for (k=0;k<8;k++) {      // Microline
+		    if (((j*3)+(i*8)+k) % 3 == 0) {
+			    // Skip every 3rd line
+		    } else {
+                for (l=32;l>0;l--) { // Byte
+                    if (w==0) {
+			    c = screens[j * 2048 + k * 256 + i * 32 + (l-1)];        // Pixel byte
+		    } else {
+			    c = memory[16384 + j * 2048 + k * 256 + i * 32 + (l-1)];
+		    }
+
+                    if (w==0) {
+			    a = screens[6144 + j * 256 + i * 32 + (l-1)];            // Attr byte
+		    } else {
+			    a = memory[22528 + j * 256 + i * 32 + (l-1)];            // Attr byte
+		    }
+
+                    if (std) {                                              // Handle attributes as ULA
+                        ink = a & 0x07;
+                        pap = ( a >> 3 ) & 0x07;
+			// Na PAXe nemame bright :(
+                        //if ( (a & 0x40) == 0x40 ) {  // Bright1 - not for black (0)
+                        //    ink += 8;
+                        //    pap += 8;
+                        //}
+						//in = colors[ink];
+						//pa = colors[pap];
+                    } else {                                                // Otherwise treat as ULA+
+                        pal = a >> 6;                                       // Palette suffix
+                        ink = a & 0x07;
+                        pap = ( a >> 3 ) & 0x07;
+                        //in = palette64[pal*16+ink];
+                        //pa = palette64[pal*16+8+pap]; 
+                    } // end if
+
+                    for (m=0;m<8;m++) {                                     // Pixel
+
+                        if ( (c & 0x01) == 0x01 ) {
+				putpix(y,x-(x-16),ink);
+                        } else {
+                            	putpix(y,x-(x-16),pap);
+                        } // end if
+                        
+                        
+                        x++;
+                        c >>= 1;
+                    } // end for m
+	
+                }
+                y++;
+                x=START_X;
+            }
+	}
+       }
+    }
+
 }
 /*
 void fb_box(int x, int y, int dx, int dy, int color) {
