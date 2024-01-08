@@ -27,6 +27,8 @@ unsigned char kbdlines[8];	// keyboard lines, as per http://www.breakintoprogram
 int emurun=0;		// Defines the status of emulation: 0=stopped, 1=running
 int fntsel=0;		// Select font
 
+int rotlcd=1;		// Rotate screen and shrink
+
 // Directory entries variables
 DIR *d;
 struct dirent *dir;
@@ -500,8 +502,12 @@ main ()
 /* Emulate ZX Spectrum */
 {
   r = LoadROM();	// Load ROM again in case it was accidentialy overwritten
- 
-  scr2lcd(1);
+
+ if (rotlcd ==0) { 
+  	scr2lcd(1);
+  } else {
+	kbd2lcd(0);
+  }
 
   cycles = 0;
 

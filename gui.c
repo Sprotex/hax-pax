@@ -204,12 +204,13 @@ unsigned char kbd2lcd(int w) {
     // if w is 0 it shows help screen, otherwise it shows screen in current memory[]
     
     x=START_X;
-    y=START_Y;  
+    y=193;  
 
     for (j=0;j<3;j++) {              // Screen "third"
         for (i=0;i<8;i++) {          // Line in third
             for (k=0;k<8;k++) {      // Microline
-		    if (((j*3)+(i*8)+k) % 3 == 0) {
+		    if (((j*64)+(i*8)+k) % 3 == 0) {
+		    //if ( 1 != 1 ) {
 			    // Skip every 3rd line
 		    } else {
                 for (l=32;l>0;l--) { // Byte
@@ -246,9 +247,9 @@ unsigned char kbd2lcd(int w) {
                     for (m=0;m<8;m++) {                                     // Pixel
 
                         if ( (c & 0x01) == 0x01 ) {
-				putpix(y,x-(x-16),ink);
+				putpx(y,x-(x/16),ink);
                         } else {
-                            	putpix(y,x-(x-16),pap);
+                            	putpx(y,x-(x/16),pap);
                         } // end if
                         
                         
