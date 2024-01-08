@@ -95,7 +95,7 @@ zxout (int port, int val)
   //printf ("OUT %X %X\n", port, val);
   //if (port == 0xFE) fb_box(1,1,9,9,2);
   
-  if (port == 0xFE && ba != 1) {
+  if ((port == 0xFE && ba != 1) && (rotlcd ==0)) {
 	
   	color = val&0x07; 
 	if (color !=pb ) {
