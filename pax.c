@@ -324,10 +324,13 @@ putpix (int x, int y, int color )
   lcdy = 240-(y+24);
 
   if (rotlcd == 0) {
+
+  	lcdx = 320-(x+32);
+  	lcdy = 240-(y+24);
   } else {
-    // swap orientation and remove some pixels to fit PAX LCD resolution
-    lcdx = 319-y;
-    lcdy = x-(x/16);
+    	// swap orientation and remove some pixels to fit PAX LCD resolution
+    	lcdx = 319-y;
+    	lcdy = x-(x/16);
   }
 	  fblines[lcdx + lcdy * LCD_HEIGHT] = speccolors[color];
 } 

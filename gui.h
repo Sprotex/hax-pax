@@ -45,6 +45,8 @@
 
 void ZXPrint(char *S, int x, int y, int Font, int ink, int pap );
 void fb_box(int x, int y, int dx, int dy, int color);
+//void ZXChr(char ch, int x, int y, int Font, int ink, int pap )
+//void ZXChar(char ch, int x, int y, int Font, int ink, int pap )
 
 //void DrawBorder(int color);
 

@@ -28,6 +28,7 @@ int emurun=0;		// Defines the status of emulation: 0=stopped, 1=running
 int fntsel=0;		// Select font
 
 int rotlcd=1;		// Rotate screen and shrink
+int ba=0;		// Border active
 
 // Directory entries variables
 DIR *d;
@@ -91,11 +92,8 @@ zxout (int port, int val)
 {
   int x,y,color;
   static int pb=0;
-  int ba=0;	// Border active?
-  //printf ("OUT %X %X\n", port, val);
-  //if (port == 0xFE) fb_box(1,1,9,9,2);
   
-  if ((port == 0xFE && ba != 1) && (rotlcd ==0)) {
+  if ((port == 0xFE && ba == 1) && (rotlcd ==0)) {
 	
   	color = val&0x07; 
 	if (color !=pb ) {
@@ -196,10 +194,10 @@ void ShowMenu() {
 /* Show options */
 void ShowOpts() {
        ZXCls();
-       ZXPrint("ZXEM Options",0,0,fntsel,6,2);
-       ZXPrint("1. Font width: ",0,8,fntsel,0,7);
-       ZXPrint("2. Screen orientation: ",0,16,fntsel,0,7);
-       ZXPrint("3. Border emulation: ",0,24,fntsel,0,7);
+       ZXPrint("ZXEM Options",0,80,fntsel,6,2);
+       ZXPrint("1. Font width: ",0,88,fntsel,0,7);
+       ZXPrint("2. Screen orientation: ",0,96,fntsel,0,7);
+       ZXPrint("3. Border emulation: ",0,104,fntsel,0,7);
 }
 
 /* Cache directory content match the snap files and populate the list */
@@ -281,6 +279,8 @@ void Dir(void) {
 	   } else {
 		  i--;
 	   }
+
+	   if (i >= (n-cur) ) break;
 	   //fname = fileList[i];
 	   strncpy (fname, fileList[i+cur],strlen(fileList[i+cur]));
 	   ZXPrint(fname,24,80+i*8,fntsel,4,0);
@@ -498,6 +498,22 @@ main ()
 		ShowMenu();
 	}
 	if ( i == 4 ) Dir();
+	if ( i == 10 ) {
+		ShowOpts();
+		if ( rotlcd == 0 ) {
+			ZXChar('0',184,96,fntsel,6,2);
+		} else {
+			ZXChar('1',184,96,fntsel,6,2);
+		}
+		while (1) {
+			i = inkey();
+			if ( i == 3 ) {
+				rotlcd = (rotlcd == 0) ? 1 : 0;
+				if (rotlcd == 0) ba=1;
+				break;
+			}
+		}
+	}
 	if ( (i == 6) || (i == 11) ) 
 /* Emulate ZX Spectrum */
 {
@@ -506,7 +522,8 @@ main ()
  if (rotlcd ==0) { 
   	scr2lcd(1);
   } else {
-	kbd2lcd(0);
+	tkbd2lcd(0);
+	scr2lcd(1);
   }
 
   cycles = 0;
@@ -542,7 +559,7 @@ main ()
 }
 /* End of emulation option */
 
-	if (i == 223) {
+	if (i == ESC) {
 		i = 0;
 		ZXPrint("Sure to exit? Green to confirm",0,184,fntsel,4,0);
 

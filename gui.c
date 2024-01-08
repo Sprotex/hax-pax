@@ -110,6 +110,7 @@ void DrawLine(unsigned char l, unsigned char s, unsigned int d) {
 
 // Display screen$ on the TFT line by line 
 // Input: s - screen number, d - dma mode: 0/1
+/*
 void Lscr2lcd(unsigned char s, unsigned int d) {
 
     unsigned char l;
@@ -117,6 +118,7 @@ void Lscr2lcd(unsigned char s, unsigned int d) {
         DrawLine(l,s,d);
     }
 }
+*/
 
 // Show Spectrum screen on the display
 unsigned char scr2lcd(int w) {
@@ -126,9 +128,9 @@ unsigned char scr2lcd(int w) {
     unsigned char std=1;
     unsigned int x,y,i,j,k,l,m,pos;
     
-    uint16_t palette64[64];
-	unsigned int line[256];
-    // if w is 0 it shows help screen, otherwise it shows screen in current memory[]
+	//uint16_t palette64[64];
+	//	unsigned int line[256];
+	// if w is 0 it shows help screen, otherwise it shows screen in current memory[]
     
     x=START_X;
     y=START_Y;  
@@ -170,9 +172,9 @@ unsigned char scr2lcd(int w) {
                     for (m=0;m<8;m++) {                                     // Pixel
 
                         if ( (c & 0x01) == 0x01 ) {
-				putpix(256-x,y,ink);
+				putpix(255-x,y,ink);
                         } else {
-                            	putpix(256-x,y,pap);
+                            	putpix(255-x,y,pap);
                         } // end if
                         
                         
@@ -266,6 +268,40 @@ unsigned char kbd2lcd(int w) {
     }
 
 }
+
+/* Touch screen keyboard */
+void tkbd2lcd(int w) {
+
+	int x=0,y=0;
+	int i,j;
+	int m,n;
+	unsigned char c;
+
+	unsigned char row[][10]= { {"1234567890"}, {"QWERTYUIOP"}, {"ASDFGHJKLe"}, {"cZXCVBNMs "} };
+	
+	for (j=193;j<321;j++) {
+		for (i=1;i<241;i++) {
+			putpx(j,i,0);
+		}
+	}
+
+
+	for (j=0;j<4;j++) {	
+		for (i=0;i<10;i++) {
+			x=12+i*24;
+			y=14+j*32;
+			for (n=y-12;n<=y+12;n++) {
+				for(m=x-8;m<=x+8;m++) {
+					putpx(193+n,(240-m),7);
+				}
+			}
+			c=row[j][i];
+			ZXChr(c,240-x,y+192,1,0,7);
+		}
+	}
+
+}
+
 /*
 void fb_box(int x, int y, int dx, int dy, int color) {
 
@@ -325,9 +361,9 @@ void ZXChar(char ch, int x, int y, int Font, int ink, int pap )
 		}
 		for (m=0;m<8;m++) {                                     // Pixel
 			if ( (c & 0x01) == 0x01 ) {
-				putpix(x,y,ink);
+				putpix(x-1,y,ink);
 			} else {
-				putpix(x,y,pap);
+				putpix(x-1,y,pap);
 			} // end if
                         
 			x--;
@@ -337,6 +373,40 @@ void ZXChar(char ch, int x, int y, int Font, int ink, int pap )
 		x+=8;
 	} // end for n
 	
+}
+
+
+// Print character outside of ZX PAPER area
+void ZXChr(char ch, int x, int y, int Font, int ink, int pap ) 
+{
+
+	//unsigned char znak[8] = { 0,16,16,16,16,0,16,0 } ;
+	//unsigned char znak[8] = { 0,66,36,24,24,36,66,0 } ;
+
+	unsigned char m,n,c;
+ 
+	//Font = 0;
+	//x=0;
+	for (n=0;n<8;n++) {
+		//c = znak[n];
+		if (Font == 0 ) {
+			c = memory[(ch-32)*8+n+15616];	// c
+		} else {
+			c = font[(ch-32)*8+n];
+		}
+		for (m=0;m<8;m++) {                                     // Pixel
+			if ( (c & 0x01) == 0x01 ) {
+				putpx(y,x,ink);
+			} else {
+				putpx(y,x,pap);
+			} // end if
+                        
+			x++;
+    		c >>= 1;
+    		} // end for m
+		y++;
+		x-=8;
+	} // end for n
 }
 
 void ZXPrint(char *S, int x, int y, int Font, int ink, int pap ) 
