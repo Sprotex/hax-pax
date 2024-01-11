@@ -174,8 +174,8 @@ z80lowmemwrite (int addr, int val)
 /* Show selection menu */
 void ShowMenu() {
 	//ZXChar('"',0,0,0,0,7);
-       zxout(254,7);
-       ZXCls();
+       //zxout(254,7);
+       Clear();
        ZXPrint("ZXEM Menu",0,0,fntsel,6,2);
        ZXPrint("1. Keyboard help",0,8,fntsel,0,7);
        ZXPrint("2. Save SNApshot",0,16,fntsel,0,7);
@@ -193,18 +193,19 @@ void ShowMenu() {
 
 /* Show options */
 void ShowOpts() {
-       ZXCls();
        ZXPrint("ZXEM Options",0,80,fntsel,6,2);
        ZXPrint("1. Font width: ",0,88,fntsel,0,7);
        ZXPrint("2. Screen orientation: ",0,96,fntsel,0,7);
        ZXPrint("3. Border emulation: ",0,104,fntsel,0,7);
+       ZXPrint("0. Exit options",0,112,fntsel,0,7);
 }
 
 /* Cache directory content match the snap files and populate the list */
 void Dir(void) {
     
-    int n=0,i=0,x,m,cnt,cur;
+    int n=0,i=0,x,m,cnt;
     char *ext;
+    static int cur=0;
 
     d = opendir(".");
     if (d) {
@@ -240,8 +241,7 @@ void Dir(void) {
     char fname[30];
     char fnum[3];
 
-    cnt = n;
-    cur = 0;
+    cnt = (1+cur/10)*10;
 
     for(m=0;m<30;m++) fname[m]='\0';
     /* Show one page of files if list is longer than 10 entries */
@@ -453,6 +453,8 @@ main ()
   int cycles;
   int i,r;
   struct stat sb;
+  unsigned char c;
+
   //char *snap;
 //  Z80_STATE state;
 
@@ -500,16 +502,20 @@ main ()
 	if ( i == 4 ) Dir();
 	if ( i == 10 ) {
 		ShowOpts();
-		if ( rotlcd == 0 ) {
-			ZXChar('0',184,96,fntsel,6,2);
-		} else {
-			ZXChar('1',184,96,fntsel,6,2);
-		}
+		c = ( rotlcd == 0 ) ? '0' : '1';
+		ZXChar(c,184,96,fntsel,6,2);
+
 		while (1) {
 			i = inkey();
 			if ( i == 3 ) {
 				rotlcd = (rotlcd == 0) ? 1 : 0;
 				if (rotlcd == 0) ba=1;
+				ShowMenu();
+				break;
+			}
+
+			if ( i == 11 ) {
+				ShowMenu();
 				break;
 			}
 		}
@@ -553,7 +559,7 @@ main ()
     }
 
   //return 0;
-  ZXCls();
+//  ZXCls();
   ShowMenu();
   i=0;
 }

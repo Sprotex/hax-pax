@@ -342,6 +342,17 @@ void ZXCls(void)
 	}
 }
 
+void Clear(void)
+{
+
+	int x,y;
+
+	for (x=0;x<320;x++) {
+		for (y=0;y<241;y++) putpx(x,y,7);
+	}
+}
+
+
 void ZXChar(char ch, int x, int y, int Font, int ink, int pap ) 
 {
 
