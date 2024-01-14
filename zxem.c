@@ -37,6 +37,9 @@ struct dirent *dir;
 
 long dly;
 
+int kbdjoy=0;		// Keyboard or joystick
+int joyval=0;		// Default joy value
+
 Z80_STATE state;
 /*
  Z80 in-port
@@ -77,8 +80,13 @@ zxin (int port)
 	  }
       //return v;
     }
-  printf ("IN %X\n", port);
 
+  // Handle joystick value
+  if ((port & 0x001f) == 0x001f) {
+	  return joyval;
+  }
+
+  printf ("IN %X\n", port);
   return 0;
 }
 
@@ -519,6 +527,21 @@ main ()
 				break;
 			}
 		}
+	}
+	if ( i == FUNC ) {
+
+		if (kbdjoy != 0) {
+			ZXChr('K',232,312,1,1,5);
+			ZXChr('B',224,312,1,1,5);
+			ZXChr('D',216,312,1,1,5);
+			kbdjoy=0;
+		} else {
+			ZXChr('J',232,312,1,2,6);
+			ZXChr('O',224,312,1,2,6);
+			ZXChr('Y',216,312,1,2,6);
+			kbdjoy=1;
+		}
+
 	}
 	if ( (i == 6) || (i == 11) ) 
 /* Emulate ZX Spectrum */

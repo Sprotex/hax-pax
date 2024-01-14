@@ -193,10 +193,13 @@ event ()
 	kbdlines[3] = 0xff;
       break;
     case 6: // "5"
-       if (ev0.value == 1)
-	kbdlines[3] = ~(1 << 4);/* 5 */
-      else
-	kbdlines[3] = 0xff;
+       if (ev0.value == 1) {
+	if (kbdjoy == 0) kbdlines[3] = ~(1 << 4);/* 5 */
+        if (kbdjoy == 1) joyval |= 0x08;
+       } else {
+	if (kbdjoy == 0) kbdlines[3] = 0xff;
+        if (kbdjoy == 1) joyval &= ~0x08;
+       }
       break;
     case 7: // "6"
        if (ev0.value == 1)
@@ -205,22 +208,32 @@ event ()
 	kbdlines[4] = 0xff;
       break;
     case 8: // 7
-      if (ev0.value == 1)
-	kbdlines[4] = ~(1 << 3);/* 7 */
-      else
-	kbdlines[4] = 0xff;
+      if (ev0.value == 1) {
+	if (kbdjoy == 0) kbdlines[4] = ~(1 << 3);/* 7 */
+        if (kbdjoy == 1) joyval |= 0x02;
+      } else {
+	if (kbdjoy == 0) kbdlines[4] = 0xff;
+        if (kbdjoy == 1) joyval &= ~0x02;
+      }
       break;
     case 9: // 8
-      if (ev0.value == 1)
-	kbdlines[4] = ~(1 << 2);	/* 8 */
-      else
-	kbdlines[4] = 0xff;
+      if (ev0.value == 1) {
+
+	if (kbdjoy == 0) kbdlines[4] = ~(1 << 2);	/* 8 */
+        if (kbdjoy == 1) joyval |= 0x04;
+      } else {
+	if (kbdjoy == 0) kbdlines[4] = 0xff;
+        if (kbdjoy == 1) joyval &= ~0x04;
+      }
       break;
      case 10: // 9
-      if (ev0.value == 1)
-	kbdlines[4] = ~(1 << 1);	/* 9 */
-      else
-	kbdlines[4] = 0xff;
+      if (ev0.value == 1) {
+	if (kbdjoy == 0) kbdlines[4] = ~(1 << 1);	/* 9 */
+	if (kbdjoy == 1) joyval |= 0x01;
+      } else {
+	if (kbdjoy == 0) kbdlines[4] = 0xff;
+	if (kbdjoy == 1) joyval &= ~0x01;
+      }
       break;
      case 11: // 0
       if (ev0.value == 1)
@@ -229,10 +242,12 @@ event ()
 	kbdlines[4] = 0xff;
       break;
     case 102: // func
+      //emurun=0;
+      //break;
       if (ev0.value == 1)
-//      kbdlines[6] = ~(1 << 2);	/* K .. LIST */
-      kbdlines[2] = ~(1 << 3);	/* R .. RUN */
-//	kbdlines[7] = ~(1 << 0);	/* SPACE */
+//      kbdlines[6] = ~(1 << 2);	// * K .. LIST 
+      kbdlines[2] = ~(1 << 3);		// * R .. RUN 
+//	kbdlines[7] = ~(1 << 0);	// * SPACE 
       else
 	kbdlines[2] = 0xff;
       break;
@@ -241,10 +256,13 @@ event ()
         printscreen();
       break;
     case 28: // enter 
-      if (ev0.value == 1)
-	kbdlines[6] = ~(1 << 0);	/* enter */
-      else
-	kbdlines[6] = 0xff;
+      if (ev0.value == 1) {
+	if (kbdjoy == 0) kbdlines[6] = ~(1 << 0);	/* enter */
+	if (kbdjoy == 1) joyval |= 0x10;
+      } else {
+	if (kbdjoy == 0) kbdlines[6] = 0xff;
+	if (kbdjoy == 1) joyval &= ~0x10;
+      }
       break;
     case 69:   // alpha
       if (ev0.value == 1)

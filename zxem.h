@@ -5,6 +5,8 @@ extern unsigned char kbdlines[8];
 
 extern int emurun;
 extern int rotlcd;
+extern int joyval;
+extern int kbdjoy;
 
 int zxin(int port);
 void zxout(int port, int val);
