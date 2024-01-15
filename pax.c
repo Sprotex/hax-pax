@@ -265,10 +265,13 @@ event ()
       }
       break;
     case 69:   // alpha
-      if (ev0.value == 1)
-	kbdlines[5] = ~(1 << 4);	/* y */
-      else
-	kbdlines[5] = 0xff;
+      if (ev0.value == 1) {
+	if (kbdjoy == 0) kbdlines[5] = ~(1 << 4);	/* y */
+	if (kbdjoy == 1) kbdlines[6] = ~(1 << 0);	/* Enter */
+      } else {
+	if (kbdjoy == 0) kbdlines[5] = 0xff;
+	if (kbdjoy == 1) kbdlines[6] = 0xff;
+      }
       break;
     default:
         printf ("Key XX\n"); // copied from a test app so as you know what # means what key
@@ -348,7 +351,7 @@ putpix (int x, int y, int color )
   } else {
     	// swap orientation and remove some pixels to fit PAX LCD resolution
     	lcdx = 319-y;
-    	lcdy = x-(x/16);
+	lcdy = x-(x/16);
   }
 	  fblines[lcdx + lcdy * LCD_HEIGHT] = speccolors[color];
 } 

@@ -85,7 +85,7 @@ zxin (int port)
   if ((port & 0x001f) == 0x001f) {
 	  return joyval;
   }
-
+  // Debug information
   printf ("IN %X\n", port);
   return 0;
 }
