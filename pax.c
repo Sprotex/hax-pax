@@ -23,11 +23,11 @@ static int printer_fd = -1; // printer output device
 static int dsp_fd = -1;   // sound device, not finished yet
 unsigned short *fblines; // memory mapped framebuffer
 
-void printscreen()
-{unsigned char prnbuf[2+48*192];
+void printscreen() {
+  unsigned char prnbuf[2+48*192];
   int i;
-   unsigned char dat[50*512];
-    int x, y, a, b, a2, b2;
+  unsigned char dat[50*512];
+  int x, y, a, b, a2, b2;
   int pad = 0;
   int pade = 50;
   
@@ -43,8 +43,6 @@ void printscreen()
                 dat[x * 100 +  1] = 0x00;
                 dat[x * 100 + pade] = 0x00;
                 dat[x * 100 + pade +1] = 0x00;
-     
-                
                 
             }
             for (y = 0; y < 192; y++) {

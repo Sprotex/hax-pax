@@ -39,6 +39,8 @@ long dly;
 
 int kbdjoy=0;		// Keyboard or joystick
 int joyval=0;		// Default joy value
+int intcnt=0;		// Interrupt counter
+int flstate;		// Actual status of flash (0 or 1 alternates between INK and PAPER)
 
 Z80_STATE state;
 /*
@@ -124,6 +126,32 @@ zxout (int port, int val)
   }
 }
 
+// Redraw block for attr change
+//
+void
+redrawblock(int addr, int val) {
+
+      int x,y,i,j,v,b;
+
+      x = (addr - 0x5800) & 31;
+      y = (addr - 0x5800)/32;
+
+      // redraw 8x8 block
+      for (j = 0; j < 8; j++) {
+        v = memory[0x4000 + x + ( (((y*8+j)&7)<<8) | ((((y*8+j)>>3)&7)<<5) | ((((y*8+j)>>6)&3)<<11)  ) ];
+      for (i = 0; i < 8; i++) { 
+	//if( attr && 0x40 == 0x40 ) b=1; else b=0;
+	//
+	  if ( ((val & 0x80) == 0x80) && (flstate == 1) ) {
+		  putpix ( (x * 8 + i), (y*8)+j, ((v << i) & 0x80) ? (val>>3&7) : (val&7));
+	  } else {
+		  putpix ( (x * 8 + i), (y*8)+j, ((v << i) & 0x80) ? (val&7) : ((val>>3)&7));
+	  }
+	  }
+	 
+	}
+}
+
 /*
  This handles writes to low memory to allow screen redraw. All changes are
  stored in global memory[] buffer
@@ -151,20 +179,8 @@ z80lowmemwrite (int addr, int val)
     }
   else
   // handle color attributes
-  if (addr >= 0x5800 && addr < (0x5800 + ((192/8) * 32)))
-    {
-      x = (addr - 0x5800) & 31;
-      y = (addr - 0x5800)/32;
-
-      // redraw 8x8 block
-      for (j = 0; j < 8; j++) {
-        v = memory[0x4000 + x + ( (((y*8+j)&7)<<8) | ((((y*8+j)>>3)&7)<<5) | ((((y*8+j)>>6)&3)<<11)  ) ];
-      for (i = 0; i < 8; i++) { 
-	//if( attr && 0x40 == 0x40 ) b=1; else b=0;
-	  putpix ( (x * 8 + i), (y*8)+j, ((v << i) & 0x80) ? (val&7) : ((val>>3)&7));
-	}
-      }
-    }
+  if (addr >= 0x5800 && addr < (0x5800 + ((192/8) * 32))) redrawblock(addr,val);
+    
   else
     {
      // this should not happen :)
@@ -489,6 +505,8 @@ main ()
 
   screen_init ();
 
+  flstate = 0;
+
   r = LoadROM();
 
   Z80Reset (&state);
@@ -578,6 +596,20 @@ main ()
 	  handle_x (); // handle keyboard (keypad)
 	  Z80Interrupt (&state, 0, NULL);
 	  cycles = 0;
+	  intcnt++;
+	}
+
+      	if (intcnt == 200) {
+		flstate=1;
+		doflash();
+
+		//zxout(254,2); // For testing only
+	}
+	if (intcnt == 400) {
+		//zxout(254,6);
+		flstate=0;
+		doflash();
+		intcnt=0;
 	}
     }
 
@@ -594,7 +626,7 @@ main ()
 
 		while (i <= 0) {
 			i = inkey();
-			if (i == 28) exit (1);
+			if (i == ENTER ) exit (1);
 		}
 		//return 0;
   	}

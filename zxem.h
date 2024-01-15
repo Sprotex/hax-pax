@@ -7,6 +7,7 @@ extern int emurun;
 extern int rotlcd;
 extern int joyval;
 extern int kbdjoy;
+extern int flstate;
 
 int zxin(int port);
 void zxout(int port, int val);
@@ -17,4 +18,6 @@ void screen_init(void);
 
 void putpix(int x, int y, int color);
 void putpx(int x, int y, int color);
+
+void redrawblock(int addr, int val);
 

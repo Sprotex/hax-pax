@@ -23,7 +23,7 @@
 #include "gui.h"
 #include "zxem.h"
 #include "screens.h"
-//#include "ssd1289.h"
+/* #include "ssd1289.h" */
 //#include <plib.h>
 
 unsigned int flsh_state=0;
@@ -660,6 +660,19 @@ int sprintf(char *out, const char *format, ...)
 	return print(&out, varg);
 }
 */
+
+void doflash() {
+	int n;
+	int addr, val;
+
+	for(n=0;n<768;n++) {
+		addr = 22528+n;
+		val = memory[addr];
+		if((val & 0x80) == 0x80) redrawblock(addr,val);	
+		
+	}
+}
+
 #ifdef TEST_PRINTF
 int main(void)
 {
