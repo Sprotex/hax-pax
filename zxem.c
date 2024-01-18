@@ -589,9 +589,9 @@ main ()
     {
       gettimeofday(&tp, NULL);
       long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-      cycles += Z80Emulate (&state, 200 /*cycles */ , NULL);
+      cycles += Z80Emulate (&state, 300 /*cycles */ , NULL);
       int p;
-      for (int o = 0; o < (1000); o++) p=o; //zpomlait
+      for (int o = 0; o < (300); o++) p=o; //zpomlait
       /*
        This is really ugly hack to fire ZX refresh interrupt
        Changing this constant probably changes speed of the game. Who knows
@@ -609,14 +609,12 @@ main ()
 	  lms = ms;
 	}
 
-      	if (intcnt == 200) {
+      	if (intcnt == 25) {
 		flstate=1;
 		doflash();
 
-		//zxout(254,2); // For testing only
 	}
-	if (intcnt == 400) {
-		//zxout(254,6);
+	if (intcnt == 50) {
 		flstate=0;
 		doflash();
 		intcnt=0;
