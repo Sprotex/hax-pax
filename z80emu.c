@@ -17,6 +17,7 @@
  */
 
 #define INDIRECT_HL     0x06
+#undef Z80_DOCUMENTED_FLAGS_ONLY
 
 /* Condition codes are encoded using 2 or 3 bits.  The xor table is needed for
  * negated conditions, it is used along with the and table.
@@ -1157,7 +1158,8 @@ emulate_next_instruction:
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (A & YX_FLAGS)
+                                        | ( (A & YX_FLAGS) | (F & YX_FLAGS) )
+                                        //Povodne: | (A & YX_FLAGS) 
 
 #endif
 
@@ -1173,7 +1175,8 @@ emulate_next_instruction:
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
-                                        | (A & YX_FLAGS)
+                                        | ( (A & YX_FLAGS) | (F & YX_FLAGS) )
+                                        //Povodne: | (A & YX_FLAGS) 
 
 #endif
 
