@@ -16,6 +16,9 @@ THIS SOFTWARE IS PROVIDED BY an anoumous author AS IS AND ANY EXPRESS OR IMPLIED
 #include <fcntl.h>
 #include <dirent.h>
 
+#include <linux/rtc.h>
+#include <sys/time.h>
+
 #include "z80emu.h"
 #include "zxem.h"
 #include "gui.h"
@@ -29,6 +32,10 @@ int fntsel=0;		// Select font
 
 int rotlcd=1;		// Rotate screen and shrink
 int ba=0;		// Border active
+
+	long int lms;
+	struct rtc_time rtc_tm; 
+	struct timeval tp;
 
 // Directory entries variables
 DIR *d;
@@ -580,6 +587,8 @@ main ()
 
   while (emurun==1)
     {
+      gettimeofday(&tp, NULL);
+      long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
       cycles += Z80Emulate (&state, 200 /*cycles */ , NULL);
       int p;
       for (int o = 0; o < (1000); o++) p=o; //zpomlait
@@ -591,12 +600,13 @@ main ()
        This also handles keyboard, but it should be done in
        an independent thread
        */
-      if (cycles > 1024*10)
+        if  ((ms -lms) > 20 )//(cycles > 1024*10)
 	{
 	  handle_x (); // handle keyboard (keypad)
 	  Z80Interrupt (&state, 0, NULL);
 	  cycles = 0;
 	  intcnt++;
+	  lms = ms;
 	}
 
       	if (intcnt == 200) {
