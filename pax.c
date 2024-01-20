@@ -10,14 +10,18 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
+
 #include <linux/soundcard.h>
 
 #include <stdint.h>
 #include <string.h>
 
 #include "zxem.h"
-
+/*
 static int touchpad_fd = -1; // touchpad input device
+*/
+
 static int keypad_fd = -1; // keypad input device
 static int printer_fd = -1; // printer output device
 static int dsp_fd = -1;   // sound device, not finished yet
