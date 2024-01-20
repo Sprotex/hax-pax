@@ -45,6 +45,18 @@
 
 void ZXPrint(char *S, int x, int y, int Font, int ink, int pap );
 void fb_box(int x, int y, int dx, int dy, int color);
+void Clear(void);
+void ZXCls(void);
+unsigned char scr2lcd(int w);
+
+void ZXChar(char ch, int x, int y, int Font, int ink, int pap );
+void ZXChr(char ch, int x, int y, int Font, int ink, int pap );
+
+unsigned char kbd2lcd(int w);
+void tkbd2lcd(int w);
+
+void doflash();
+
 //void ZXChr(char ch, int x, int y, int Font, int ink, int pap )
 //void ZXChar(char ch, int x, int y, int Font, int ink, int pap )
 

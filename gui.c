@@ -39,7 +39,7 @@ uint16_t colors [16] = {
     BLACK,HBLUE,HRED,HMAGENTA,HGREEN,HCYAN,HYELLOW,HWHITE,BLACK,BLUE,RED,MAGENTA,GREEN,CYAN,YELLOW,WHITE
 }; 
 
-
+/*
 // Draw one line
 void DrawLine(unsigned char l, unsigned char s, unsigned int d) {
 // l = line, s = screen
@@ -107,6 +107,7 @@ void DrawLine(unsigned char l, unsigned char s, unsigned int d) {
 		//SSD1289_drawArea(y,x,8,256,img);
 	}
 }
+*/
 
 // Display screen$ on the TFT line by line 
 // Input: s - screen number, d - dma mode: 0/1
@@ -122,11 +123,11 @@ void Lscr2lcd(unsigned char s, unsigned int d) {
 
 // Show Spectrum screen on the display
 unsigned char scr2lcd(int w) {
-    unsigned char a,ink,pap,pal;
-    uint16_t in=0,pa=7;
+    unsigned char a,ink,pap; //,pal;
+    //uint16_t in=0,pa=7;
     unsigned char c;
     unsigned char std=1;
-    unsigned int x,y,i,j,k,l,m,pos;
+    unsigned int x,y,i,j,k,l,m; //,pos;
     
 	//uint16_t palette64[64];
 	//	unsigned int line[256];
@@ -162,7 +163,7 @@ unsigned char scr2lcd(int w) {
 						//in = colors[ink];
 						//pa = colors[pap];
                     } else {                                                // Otherwise treat as ULA+
-                        pal = a >> 6;                                       // Palette suffix
+                        //pal = a >> 6;                                       // Palette suffix
                         ink = a & 0x07;
                         pap = ( a >> 3 ) & 0x07;
                         //in = palette64[pal*16+ink];
@@ -189,20 +190,20 @@ unsigned char scr2lcd(int w) {
         }
     }
 
-    //return(0);
+    return(0);
 }
 
 
 // Show Spectrum screen on the display
 unsigned char kbd2lcd(int w) {
-    unsigned char a,ink,pap,pal;
-    uint16_t in=0,pa=7;
+    unsigned char a,ink,pap; //,pal;
+    //uint16_t in=0,pa=7;
     unsigned char c;
     unsigned char std=1;
-    unsigned int x,y,i,j,k,l,m,pos;
+    unsigned int x,y,i,j,k,l,m; //,pos;
     
-    uint16_t palette64[64];
-	unsigned int line[256];
+    //uint16_t palette64[64];
+    // unsigned int line[256];
     // if w is 0 it shows help screen, otherwise it shows screen in current memory[]
     
     x=START_X;
@@ -239,7 +240,7 @@ unsigned char kbd2lcd(int w) {
 						//in = colors[ink];
 						//pa = colors[pap];
                     } else {                                                // Otherwise treat as ULA+
-                        pal = a >> 6;                                       // Palette suffix
+                        //pal = a >> 6;                                       // Palette suffix
                         ink = a & 0x07;
                         pap = ( a >> 3 ) & 0x07;
                         //in = palette64[pal*16+ink];
@@ -266,7 +267,7 @@ unsigned char kbd2lcd(int w) {
 	}
        }
     }
-
+    return 0;
 }
 
 /* Touch screen keyboard */

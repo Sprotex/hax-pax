@@ -1,4 +1,5 @@
-int inkey() ;
+int inkey();
+void handle_x();
 
 
 // Key codes definition

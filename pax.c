@@ -25,7 +25,7 @@ unsigned short *fblines; // memory mapped framebuffer
 
 void printscreen() {
   unsigned char prnbuf[2+48*192];
-  int i;
+  //int i;
   unsigned char dat[50*512];
   int x, y, a, b, a2, b2;
   int pad = 0;
@@ -64,8 +64,8 @@ void printscreen() {
         }
         write(printer_fd, dat, 512*((pad) ? pade : 48)) ; //!= 512*((pad) ? 50 : 48));
         
-  /*/
-   // MHI puvodni tisk jednou teckou
+// MHI puvodni tisk jednou teckou
+ /*
   
   
   
@@ -75,7 +75,7 @@ void printscreen() {
     
   write(printer_fd, prnbuf, 2+192*48);
   
-/**/  
+*/  
 }
 
 
@@ -137,7 +137,7 @@ event ()
   int rd;
   rd = read (keypad_fd, &ev0, sizeof (struct input_event));
   if (rd < sizeof (struct input_event))
-    return 0;
+    return;
     
   if (ev0.type != 1)
     return;
@@ -145,7 +145,7 @@ event ()
 
   // some paxes return first event with weird value ... discard this one
   if (ev0.value != 0 && ev0.value != 1)
-    return ;
+    return;
     
   // xxx there are probably many missing keys for manic miner 
   /* VHB 
@@ -281,7 +281,7 @@ event ()
  This handles keyboard. Originally this was for X11
 */
 void
-handle_x ()
+handle_x()
 {
   fd_set rfds;
   struct timeval tv;
@@ -298,13 +298,14 @@ handle_x ()
     perror ("select()");
 
   else if (retval)
-    event ();
+    event();
 
  
   event();
 
-  return 0;
+  return;
 }
+
 // 565 LCD
 #define RGB(r,g,b)  (((r&0x1F)<<11) | ((g&0x2F)<<5) | ((b&0x1F))) 
 /* black, blue, red, magenta, green, cyan, yellow and white */
@@ -429,7 +430,7 @@ void screen_init (void)
 
   //Sound Buffer
   uint8_t buf[SampleRate];
-  uint8_t Blocks    = 1000,
+  unsigned Blocks    = 1000,
                    BlockSize = SampleRate/Blocks;
 
   //Synthesize Output Loop

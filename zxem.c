@@ -138,7 +138,7 @@ zxout (int port, int val)
 void
 redrawblock(int addr, int val) {
 
-      int x,y,i,j,v,b;
+      int x,y,i,j,v;
 
       x = (addr - 0x5800) & 31;
       y = (addr - 0x5800)/32;
@@ -166,7 +166,7 @@ redrawblock(int addr, int val) {
 void
 z80lowmemwrite (int addr, int val)
 {
-  int x, y, i, j, attr, v, b;
+  int x, y, i, attr;
 
   // http://www.breakintoprogram.co.uk/hardware/computers/zx-spectrum/screen-memory-layout
 
@@ -229,6 +229,94 @@ void ShowOpts() {
        ZXPrint("2. Screen orientation: ",0,96,fntsel,0,7);
        ZXPrint("3. Border emulation: ",0,104,fntsel,0,7);
        ZXPrint("0. Exit options",0,112,fntsel,0,7);
+}
+
+/* Load snap from given filename */
+int LoadSNA(char *name) {
+
+  unsigned char *snadata;
+  int snasize;
+
+  unsigned char *snap;
+  int fd;
+
+  snasize = 0;
+  snadata = 0;
+
+  if (name)
+    {
+      fd = open (name, O_RDONLY);
+      //fstat(fd,&sb);
+      snasize = 49179;		//sb.st_size;
+      snadata = (unsigned char *) malloc (snasize);
+      if (snasize != 49179)
+	{
+	  printf ("Warning: sna size not 49179 ! \n");
+	  //exit (1);
+	}
+      if (read (fd, snadata, snasize) != snasize)
+	printf ("sna error\n");
+      close (fd);
+    }
+
+  if (snadata)
+    {
+      memcpy (&memory[0x4000], &snadata[0x1b], 0xC000);
+      state.pc = 0x0072; // 0x0072;
+
+      snap = snadata;
+      
+      // xxx may be wrong!!
+
+      state.i = *(snap++);
+      ((unsigned char *) state.alternates)[Z80_L] = *(snap++); 
+      ((unsigned char *) state.alternates)[Z80_H] = *(snap++); 
+      ((unsigned char *) state.alternates)[Z80_E] = *(snap++); 
+      ((unsigned char *) state.alternates)[Z80_D] = *(snap++); 
+      ((unsigned char *) state.alternates)[Z80_C] = *(snap++); 
+      ((unsigned char *) state.alternates)[Z80_B] = *(snap++); 
+      ((unsigned char *) state.alternates)[Z80_F] = *(snap++); 
+      ((unsigned char *) state.alternates)[Z80_A] = *(snap++); 
+     
+      state.registers.byte[Z80_L] = *(snap++); 
+      state.registers.byte[Z80_H] = *(snap++); 
+      state.registers.byte[Z80_E] = *(snap++); 
+      state.registers.byte[Z80_D] = *(snap++); 
+      state.registers.byte[Z80_C] = *(snap++); 
+      state.registers.byte[Z80_B] = *(snap++); 
+      
+      state.registers.byte[Z80_IYL] = *(snap++); 
+      state.registers.byte[Z80_IYH] = *(snap++); 
+      
+      state.registers.byte[Z80_IXL] = *(snap++); 
+      state.registers.byte[Z80_IXH] = *(snap++); 
+      
+      if ((*(snap++) & 4) != 0)  // was 0
+	{
+	  state.iff1 = 1;
+	  state.iff2 = 1;
+	}
+      else
+	{
+	  state.iff1 = 0;
+	  state.iff2 = 0;
+	}
+      state.r = *(snap++);
+      state.registers.byte[Z80_F] = *(snap++); 
+      state.registers.byte[Z80_A] = *(snap++); 
+      
+      state.registers.byte[Z80_SPL] = *(snap++);  //was L
+      state.registers.byte[Z80_SPH] = *(snap++);   // was H
+      state.im =  *(snap++);
+      //output(254, *(snap++) & 7);
+
+      state.pc = memory[state.registers.word[Z80_SP]];
+      state.registers.word[Z80_SP]++; 
+      state.pc += 256*memory[state.registers.word[Z80_SP]];
+      state.registers.word[Z80_SP]++; 
+    }
+
+  return 0;
 }
 
 /* Cache directory content match the snap files and populate the list */
@@ -368,92 +456,6 @@ void Dir(void) {
     closedir(d);
 }
 
-/* Load snap from given filename */
-int LoadSNA(char *name) {
-
-  unsigned char *snadata;
-  int snasize;
-
-  char *snap;
-  int fd;
-
-  snasize = 0;
-  snadata = 0;
-
-  if (name)
-    {
-      fd = open (name, O_RDONLY);
-      //fstat(fd,&sb);
-      snasize = 49179;		//sb.st_size;
-      snadata = (unsigned char *) malloc (snasize);
-      if (snasize != 49179)
-	{
-	  printf ("Warning: sna size not 49179 ! \n");
-	  //exit (1);
-	}
-      if (read (fd, snadata, snasize) != snasize)
-	printf ("sna error\n");
-      close (fd);
-    }
-
-  if (snadata)
-    {
-      memcpy (&memory[0x4000], &snadata[0x1b], 0xC000);
-      state.pc = 0x0072; // 0x0072;
-
-      snap = snadata;
-      
-      // xxx may be wrong!!
-
-      state.i = *(snap++);
-      ((unsigned char *) state.alternates)[Z80_L] = *(snap++); 
-      ((unsigned char *) state.alternates)[Z80_H] = *(snap++); 
-      ((unsigned char *) state.alternates)[Z80_E] = *(snap++); 
-      ((unsigned char *) state.alternates)[Z80_D] = *(snap++); 
-      ((unsigned char *) state.alternates)[Z80_C] = *(snap++); 
-      ((unsigned char *) state.alternates)[Z80_B] = *(snap++); 
-      ((unsigned char *) state.alternates)[Z80_F] = *(snap++); 
-      ((unsigned char *) state.alternates)[Z80_A] = *(snap++); 
-     
-      state.registers.byte[Z80_L] = *(snap++); 
-      state.registers.byte[Z80_H] = *(snap++); 
-      state.registers.byte[Z80_E] = *(snap++); 
-      state.registers.byte[Z80_D] = *(snap++); 
-      state.registers.byte[Z80_C] = *(snap++); 
-      state.registers.byte[Z80_B] = *(snap++); 
-      
-      state.registers.byte[Z80_IYL] = *(snap++); 
-      state.registers.byte[Z80_IYH] = *(snap++); 
-      
-      state.registers.byte[Z80_IXL] = *(snap++); 
-      state.registers.byte[Z80_IXH] = *(snap++); 
-      
-      if ((*(snap++) & 4) != 0)  // was 0
-	{
-	  state.iff1 = 1;
-	  state.iff2 = 1;
-	}
-      else
-	{
-	  state.iff1 = 0;
-	  state.iff2 = 0;
-	}
-      state.r = *(snap++);
-      state.registers.byte[Z80_F] = *(snap++); 
-      state.registers.byte[Z80_A] = *(snap++); 
-      
-      state.registers.byte[Z80_SPL] = *(snap++);  //was L
-      state.registers.byte[Z80_SPH] = *(snap++);   // was H
-      state.im =  *(snap++);
-      //output(254, *(snap++) & 7);
-
-      state.pc = memory[state.registers.word[Z80_SP]];
-      state.registers.word[Z80_SP]++; 
-      state.pc += 256*memory[state.registers.word[Z80_SP]];
-      state.registers.word[Z80_SP]++; 
-    }
-}
-
 /* Load default rom file */
 int LoadROM(void) {
 
@@ -471,6 +473,8 @@ int LoadROM(void) {
       exit (1);
     }
   close (fd);
+
+  return 0;
 }
 
 /* Main loop start */
@@ -480,10 +484,10 @@ main ()
   //char *romfilename;
   //char *snafilename;
   //int romsize;
-  int fd;
+  //int fd;
   int cycles;
-  int i,r;
-  struct stat sb;
+  int i;
+  //struct stat sb;
   unsigned char c;
 
   //char *snap;
@@ -514,7 +518,7 @@ main ()
 
   flstate = 0;
 
-  r = LoadROM();
+  LoadROM();
 
   Z80Reset (&state);
 
@@ -571,7 +575,7 @@ main ()
 	if ( (i == 6) || (i == 11) ) 
 /* Emulate ZX Spectrum */
 {
-  r = LoadROM();	// Load ROM again in case it was accidentialy overwritten
+ LoadROM();	// Load ROM again in case it was accidentialy overwritten
 
  if (rotlcd ==0) { 
   	scr2lcd(1);
@@ -589,9 +593,9 @@ main ()
     {
       gettimeofday(&tp, NULL);
       long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-      cycles += Z80Emulate (&state, 300 /*cycles */ , NULL);
-      int p;
-      for (int o = 0; o < (300); o++) p=o; //zpomlait
+      cycles += Z80Emulate (&state, 200 /*cycles */ , NULL);
+      
+      for (int o = 0; o < (1000); o++) asm("nop"); //zpomlait
       /*
        This is really ugly hack to fire ZX refresh interrupt
        Changing this constant probably changes speed of the game. Who knows
@@ -602,7 +606,7 @@ main ()
        */
         if  ((ms -lms) > 20 )//(cycles > 1024*10)
 	{
-	  handle_x (); // handle keyboard (keypad)
+	  handle_x(); // handle keyboard (keypad)
 	  Z80Interrupt (&state, 0, NULL);
 	  cycles = 0;
 	  intcnt++;
