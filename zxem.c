@@ -15,6 +15,8 @@ THIS SOFTWARE IS PROVIDED BY an anoumous author AS IS AND ANY EXPRESS OR IMPLIED
 #include <string.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <sys/ioctl.h>
+#include <errno.h>
 
 #include <linux/rtc.h>
 #include <sys/time.h>
@@ -33,9 +35,9 @@ int fntsel=0;		// Select font
 int rotlcd=1;		// Rotate screen and shrink
 int ba=0;		// Border active
 
-	long int lms;
-	struct rtc_time rtc_tm; 
-	struct timeval tp;
+long int lms;
+struct rtc_time rtc_tm; 
+struct timeval tp;
 
 // Directory entries variables
 DIR *d;
@@ -48,6 +50,8 @@ int kbdjoy=0;		// Keyboard or joystick
 int joyval=0;		// Default joy value
 int intcnt=0;		// Interrupt counter
 int flstate;		// Actual status of flash (0 or 1 alternates between INK and PAPER)
+
+//static const char default_rtc[] = "/dev/rtc0";
 
 Z80_STATE state;
 /*
@@ -201,6 +205,17 @@ z80lowmemwrite (int addr, int val)
 #ifdef __arm__
 #define main _init
 #endif
+
+int GetTime() {
+	int retval;
+	/* Read the RTC time/date */
+        retval = ioctl(rtc_fd, RTC_RD_TIME, &rtc_tm);
+        if (retval == -1) {
+	                perror("RTC_RD_TIME ioctl");
+	                exit(errno);
+        }
+	return retval;
+}
 
 /* Show selection menu */
 void ShowMenu() {
@@ -489,6 +504,9 @@ main ()
   int i;
   //struct stat sb;
   unsigned char c;
+  int curr_sec, prev_sec;
+ 
+  char datetime[80];
 
   //char *snap;
 //  Z80_STATE state;
@@ -525,6 +543,16 @@ main ()
   state.pc = 0x0000;
 
   ShowMenu();
+
+  GetTime();
+  prev_sec = rtc_tm.tm_sec;
+
+  ZXPrint("System date/time:",0,192-16,fntsel,1,7);
+  sprintf(datetime, "%2d-%2d-%4d %02d:%02d:%02d",
+	rtc_tm.tm_mday, rtc_tm.tm_mon + 1, rtc_tm.tm_year + 1900,
+        rtc_tm.tm_hour, rtc_tm.tm_min, rtc_tm.tm_sec);
+
+  ZXPrint(datetime,0,192-8,fntsel,1,7);
 
   while (1) {
      	i = inkey();
@@ -642,5 +670,23 @@ main ()
 		}
 		//return 0;
   	}
+
+	GetTime();
+	curr_sec = rtc_tm.tm_sec;
+	if (curr_sec > prev_sec) {
+
+		ZXPrint("System date/time:",0,192-16,fntsel,1,7);
+		sprintf(datetime, "%2d-%2d-%4d %02d:%02d:%02d",
+				rtc_tm.tm_mday, rtc_tm.tm_mon + 1, rtc_tm.tm_year + 1900,
+			        rtc_tm.tm_hour, rtc_tm.tm_min, rtc_tm.tm_sec);
+		ZXPrint(datetime,0,192-8,fntsel,1,7);
+		if (curr_sec == 59) {
+			prev_sec = -1;
+		} else {
+			prev_sec = curr_sec;
+		}
+
+
+	}
   }
 }

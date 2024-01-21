@@ -1,6 +1,8 @@
 int inkey();
 void handle_x();
 
+//extern int rtc_fd;
+
 
 // Key codes definition
 #define ALPHA 69

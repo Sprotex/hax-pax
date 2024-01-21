@@ -18,6 +18,9 @@
 #include <string.h>
 
 #include "zxem.h"
+
+static const char default_rtc[] = "/dev/rtc0";
+
 /*
 static int touchpad_fd = -1; // touchpad input device
 */
@@ -25,6 +28,8 @@ static int touchpad_fd = -1; // touchpad input device
 static int keypad_fd = -1; // keypad input device
 static int printer_fd = -1; // printer output device
 static int dsp_fd = -1;   // sound device, not finished yet
+int rtc_fd = -1;
+
 unsigned short *fblines; // memory mapped framebuffer
 
 void printscreen() {
@@ -408,7 +413,8 @@ void screen_init (void)
   int fd;
   int i, j;
   
-  
+  const char *rtc = default_rtc;
+
   // xxx add checks ! 
 
   keypad_fd = open ("/dev/keypad", O_RDWR);
@@ -420,6 +426,12 @@ void screen_init (void)
   printer_fd = open ("/dev/printer", O_RDWR);
   dsp_fd = open("/dev/snd/dsp", O_WRONLY);
 
+  rtc_fd = open(rtc, O_RDONLY);
+        if (rtc_fd ==  -1) {
+                perror(rtc);
+                //exit(errno);
+        }
+ 
   // sound test, does not work, to be analyzed later
   //
   //Device Parameters

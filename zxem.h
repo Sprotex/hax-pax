@@ -8,6 +8,7 @@ extern int rotlcd;
 extern int joyval;
 extern int kbdjoy;
 extern int flstate;
+extern int rtc_fd;
 
 int zxin(int port);
 void zxout(int port, int val);
