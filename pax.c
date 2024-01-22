@@ -174,10 +174,13 @@ event ()
       break;
       
     case 2:  //1
-      if (ev0.value == 1)
-	kbdlines[3] = ~(1 << 0);/* 1 */
-      else
-	kbdlines[3] = 0xff;
+      if (ev0.value == 1) {
+	if (kbdjoy == 0) kbdlines[3] = ~(1 << 0);/* 1 */
+        if ( (kbdjoy == 1) && (rotlcd == 0) ) joyval |= 0x02;
+	} else {
+	if (kbdjoy == 0) kbdlines[3] = 0xff;
+        if ( (kbdjoy == 1) && (rotlcd == 0) ) joyval &= ~0x02;
+	}
       break;
       printf ("Key 1\n"); // copied from a test app so as you know what # means what key
       break;
@@ -194,10 +197,13 @@ event ()
 	kbdlines[3] = 0xff;
       break;
     case 5: // "4"
-       if (ev0.value == 1)
-	kbdlines[3] = ~(1 << 3);/* 4 */
-      else
-	kbdlines[3] = 0xff;
+       if (ev0.value == 1) {
+	if (kbdjoy == 0) kbdlines[3] = ~(1 << 3);/* 4 */
+        if ( (kbdjoy == 1) && (rotlcd == 0) ) joyval |= 0x04;
+      	} else {
+	if (kbdjoy == 0) kbdlines[3] = 0xff;
+        if ( (kbdjoy == 1) && (rotlcd == 0) ) joyval &= ~0x04;
+	}
       break;
     case 6: // "5"
        if (ev0.value == 1) {
@@ -217,29 +223,31 @@ event ()
     case 8: // 7
       if (ev0.value == 1) {
 	if (kbdjoy == 0) kbdlines[4] = ~(1 << 3);/* 7 */
-        if (kbdjoy == 1) joyval |= 0x02;
+        if ( (kbdjoy == 1) && (rotlcd == 1) ) joyval |= 0x02;
+	if ( (kbdjoy == 1) && (rotlcd == 0) ) joyval |= 0x01;
       } else {
 	if (kbdjoy == 0) kbdlines[4] = 0xff;
-        if (kbdjoy == 1) joyval &= ~0x02;
+        if ( (kbdjoy == 1) && (rotlcd == 1) ) joyval &= ~0x02;
+	if ( (kbdjoy == 1) && (rotlcd == 0) ) joyval &= ~0x01;
       }
       break;
     case 9: // 8
       if (ev0.value == 1) {
 
 	if (kbdjoy == 0) kbdlines[4] = ~(1 << 2);	/* 8 */
-        if (kbdjoy == 1) joyval |= 0x04;
+        if ( (kbdjoy == 1) && (rotlcd == 1) ) joyval |= 0x04;
       } else {
 	if (kbdjoy == 0) kbdlines[4] = 0xff;
-        if (kbdjoy == 1) joyval &= ~0x04;
+        if ( (kbdjoy == 1) && (rotlcd == 1) )  joyval &= ~0x04;
       }
       break;
      case 10: // 9
       if (ev0.value == 1) {
 	if (kbdjoy == 0) kbdlines[4] = ~(1 << 1);	/* 9 */
-	if (kbdjoy == 1) joyval |= 0x01;
+	if ( (kbdjoy == 1) && (rotlcd == 1) ) joyval |= 0x01;
       } else {
 	if (kbdjoy == 0) kbdlines[4] = 0xff;
-	if (kbdjoy == 1) joyval &= ~0x01;
+	if ( (kbdjoy == 1) && (rotlcd == 1) )  joyval &= ~0x01;
       }
       break;
      case 11: // 0
