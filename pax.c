@@ -21,15 +21,15 @@
 
 static const char default_rtc[] = "/dev/rtc0";
 
-/*
-static int touchpad_fd = -1; // touchpad input device
-*/
-
 static int keypad_fd = -1; // keypad input device
 static int printer_fd = -1; // printer output device
 static int dsp_fd = -1;   // sound device, not finished yet
-int rtc_fd = -1;
+static int touchpad_fd = -1;
+int realx = 0; 
+int realy = 0; 
+struct input_event ev0[64]; 
 
+int rtc_fd = -1;
 unsigned short *fblines; // memory mapped framebuffer
 
 void printscreen() {
@@ -140,7 +140,7 @@ inkey()
  Handle Linux input events. this maps keystrokes to ZX spectrum keylines
 */
 void
-event ()
+event()
 {
   struct input_event ev0;
   int rd;
@@ -323,6 +323,58 @@ handle_x()
   return;
 }
 
+/*
+Touchscreen handling routine 
+*/
+
+
+void touch_event() {
+
+    int rd, i;
+
+	 rd = read(touchpad_fd, ev0, sizeof(struct input_event) * 64);
+
+  	if (rd < sizeof (struct input_event))
+    		return;
+
+	 for (i = 0; i < rd / sizeof(struct input_event); i++) {
+	 	 //printf("", ev0[i].type, ev0[i].code, ev0[i].value);
+	 	  if (ev0[i].type == 3 && ev0[i].code == ABS_X) { 
+			  realx = ev0[i].value;
+		  } else if (ev0[i].type == 3 && ev0[i].code == ABS_Y) {
+			  realy = ev0[i].value;
+		  }
+	}
+
+}
+
+void handle_event() {
+
+    fd_set rfds;
+    struct timeval tv;
+    int retval;
+
+
+   /* Watch stdin (fd 0) to see when it has input. */
+    FD_ZERO(&rfds);
+    FD_SET(touchpad_fd, &rfds);
+
+   /* Wait up to five seconds. */
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+
+    retval = select(1, &rfds, NULL, NULL, &tv);
+    /* Don't rely on the value of tv now! */
+  	if (retval == -1)
+    		perror ("select()");
+
+	else if (retval)
+		touch_event();
+	 
+
+	touch_event();
+}
+
 // 565 LCD
 #define RGB(r,g,b)  (((r&0x1F)<<11) | ((g&0x2F)<<5) | ((b&0x1F))) 
 /* black, blue, red, magenta, green, cyan, yellow and white */
@@ -440,6 +492,12 @@ void screen_init (void)
                 //exit(errno);
         }
  
+  touchpad_fd = open("/dev/tp", O_RDWR);  
+	if ( touchpad_fd < 0 ) {
+         perror("Unable to open touchscreen");
+	 //return -1; 
+	}
+
   // sound test, does not work, to be analyzed later
   //
   //Device Parameters

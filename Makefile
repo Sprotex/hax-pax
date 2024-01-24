@@ -4,7 +4,7 @@
 #LIBS = -lX11
 
 CC = arm-none-eabi-gcc
-CFLAGS = -Wall -fPIC -I../pokusy/inc/ -I /usr/arm-linux-gnueabi/include/
+CFLAGS = -Wall -fPIC -I /usr/arm-linux-gnueabi/include/
 LIBS =  /usr/arm-linux-gnueabi/lib/
 
 all: zxem
@@ -19,7 +19,7 @@ z80emu.o: z80emu.c z80emu.h z80config.h z80user.h \
 
 OBJECT_FILES = zxem.o z80emu.o 
 #OBJECT_FILES += x11.o
-OBJECT_FILES += pax.o gui.c
+OBJECT_FILES += pax.o gui.o
 
 zxem: $(OBJECT_FILES)
 #	$(CC) $(OBJECT_FILES) -o $@ $(LIBS)

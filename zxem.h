@@ -9,6 +9,7 @@ extern int joyval;
 extern int kbdjoy;
 extern int flstate;
 extern int rtc_fd;
+extern int realx,realy;
 
 int zxin(int port);
 void zxout(int port, int val);

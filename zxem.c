@@ -635,6 +635,7 @@ main ()
         if  ((ms -lms) > 20 )//(cycles > 1024*10)
 	{
 	  handle_x(); // handle keyboard (keypad)
+	  //handle_event();
 	  Z80Interrupt (&state, 0, NULL);
 	  cycles = 0;
 	  intcnt++;
@@ -653,8 +654,6 @@ main ()
 	}
     }
 
-  //return 0;
-//  ZXCls();
   ShowMenu();
   i=0;
 }
@@ -670,6 +669,12 @@ main ()
 		}
 		//return 0;
   	}
+
+	// BLOCKING! - ak sa nasledujuci riadok odkomentuje, bude sa vyzadovat 
+	// kliknutie na touchscreen predtym ako sa otestuju kody klavesnice
+	//handle_event();
+	sprintf(datetime,"X= %d, Y= %d     ",realx,realy);
+	ZXPrint(datetime,0,192-24,fntsel,0,7);
 
 	GetTime();
 	curr_sec = rtc_tm.tm_sec;
