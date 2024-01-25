@@ -34,7 +34,7 @@ unsigned short *fblines; // memory mapped framebuffer
 
 void printscreen() {
   unsigned char prnbuf[2+48*192];
-  //int i;
+  int i;
   unsigned char dat[50*512];
   int x, y, a, b, a2, b2;
   int pad = 0;
@@ -43,7 +43,8 @@ void printscreen() {
   prnbuf[0] = 0x04;
   prnbuf[1] = 0x00;
   memset(prnbuf + 2, 0, sizeof(prnbuf)-2);
-  
+ 
+  if (prtsz == 2) { 
   //ub880d
   /**/
          for (x = 0; x < 256; x++) {
@@ -72,9 +73,10 @@ void printscreen() {
             }
         }
         write(printer_fd, dat, 512*((pad) ? pade : 48)) ; //!= 512*((pad) ? 50 : 48));
+  }
         
 // MHI puvodni tisk jednou teckou
- /*
+  if (prtsz == 1) { 
   
   
   
@@ -84,7 +86,7 @@ void printscreen() {
     
   write(printer_fd, prnbuf, 2+192*48);
   
-*/  
+  }  
 }
 
 
@@ -267,8 +269,18 @@ event()
 	kbdlines[2] = 0xff;
       break;
     case 14:   // yellow <
-      if (ev0.value == 1)
-        printscreen();
+      if (ev0.value == 1) {
+	      if (prtsz > 0)  {
+		      printscreen();
+	      } else {
+		      kbdlines[7] = ~(1 << 0);
+		      kbdlines[0] = ~(1 << 0);
+	      }
+	      
+      } else {
+	      kbdlines[7] = 0xff;
+	      kbdlines[0] = 0xff;
+      }
       break;
     case 28: // enter 
       if (ev0.value == 1) {

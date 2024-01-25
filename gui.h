@@ -56,6 +56,8 @@ unsigned char kbd2lcd(int w);
 void tkbd2lcd(int w);
 
 void doflash();
+void ShowMenu();
+void ShowOpts();
 
 //void ZXChr(char ch, int x, int y, int Font, int ink, int pap )
 //void ZXChar(char ch, int x, int y, int Font, int ink, int pap )

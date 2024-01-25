@@ -10,6 +10,8 @@ extern int kbdjoy;
 extern int flstate;
 extern int rtc_fd;
 extern int realx,realy;
+extern int fntsel;
+extern int prtsz;
 
 int zxin(int port);
 void zxout(int port, int val);

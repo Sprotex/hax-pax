@@ -421,6 +421,7 @@ void ZXChr(char ch, int x, int y, int Font, int ink, int pap )
 	} // end for n
 }
 
+/* Print into ZX Screen natively from high level system */
 void ZXPrint(char *S, int x, int y, int Font, int ink, int pap ) 
 {
 
@@ -440,6 +441,7 @@ void ZXPrint(char *S, int x, int y, int Font, int ink, int pap )
 	}
 }
 
+/* Putc function equivalent with ZX Screen printing */
 int zxputc(char c) {
 
     static int x=0;
@@ -672,6 +674,33 @@ void doflash() {
 		if((val & 0x80) == 0x80) redrawblock(addr,val);	
 		
 	}
+}
+
+/* Show selection menu */
+void ShowMenu() {
+
+       Clear();
+       ZXPrint("ZXEM Menu",0,0,fntsel,6,2);
+       ZXPrint("1. Keyboard help",0,8,fntsel,0,7);
+       ZXPrint("2. Save SNApshot",0,16,fntsel,0,7);
+       ZXPrint("3. Load SNApshot",0,24,fntsel,0,7);
+       ZXPrint("4. Load ROM & Reset",0,32,fntsel,0,7);
+       ZXPrint("5. Reset",0,40,fntsel,0,7);
+       ZXPrint("7. Open TAPe",0,48,fntsel,0,7);
+       ZXPrint("8. Poke",0,56,fntsel,0,7);
+       ZXPrint("9. Options",0,64,fntsel,0,7);
+       ZXPrint("0. Exit menu",0,72,fntsel,0,7);
+
+}
+
+/* Show options */
+void ShowOpts() {
+       ZXPrint("ZXEM Options",0,80,fntsel,6,2);
+       ZXPrint("1. Font width: ",0,88,fntsel,0,7);
+       ZXPrint("2. Screen orientation: ",0,96,fntsel,0,7);
+       ZXPrint("3. Border emulation: ",0,104,fntsel,0,7);
+       ZXPrint("4. Print size: ",0,112,fntsel,0,7);
+       ZXPrint("0. Exit options",0,120,fntsel,0,7);
 }
 
 #ifdef TEST_PRINTF

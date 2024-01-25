@@ -34,6 +34,7 @@ int fntsel=0;		// Select font
 
 int rotlcd=1;		// Rotate screen and shrink
 int ba=0;		// Border active
+int prtsz=0;		// Print size
 
 long int lms;
 struct rtc_time rtc_tm; 
@@ -215,35 +216,6 @@ int GetTime() {
 	                exit(errno);
         }
 	return retval;
-}
-
-/* Show selection menu */
-void ShowMenu() {
-	//ZXChar('"',0,0,0,0,7);
-       //zxout(254,7);
-       Clear();
-       ZXPrint("ZXEM Menu",0,0,fntsel,6,2);
-       ZXPrint("1. Keyboard help",0,8,fntsel,0,7);
-       ZXPrint("2. Save SNApshot",0,16,fntsel,0,7);
-       ZXPrint("3. Load SNApshot",0,24,fntsel,0,7);
-       ZXPrint("4. Load ROM & Reset",0,32,fntsel,0,7);
-       ZXPrint("5. Reset",0,40,fntsel,0,7);
-       ZXPrint("7. Open TAPe",0,48,fntsel,0,7);
-       ZXPrint("8. Poke",0,56,fntsel,0,7);
-       ZXPrint("9. Options",0,64,fntsel,0,7);
-       ZXPrint("0. Exit menu",0,72,fntsel,0,7);
-
-       //ZXPrint("Zdravi te PAX! Nativne...",0,100,0,0,7);
-       //zxprintf("%s","Pozdravuje PAX, nie emulator!");
-}
-
-/* Show options */
-void ShowOpts() {
-       ZXPrint("ZXEM Options",0,80,fntsel,6,2);
-       ZXPrint("1. Font width: ",0,88,fntsel,0,7);
-       ZXPrint("2. Screen orientation: ",0,96,fntsel,0,7);
-       ZXPrint("3. Border emulation: ",0,104,fntsel,0,7);
-       ZXPrint("0. Exit options",0,112,fntsel,0,7);
 }
 
 /* Load snap from given filename */
@@ -554,6 +526,7 @@ main ()
 
   ZXPrint(datetime,0,192-8,fntsel,1,7);
 
+  /* Manage menu */
   while (1) {
      	i = inkey();
         if (i == 2) {
@@ -565,10 +538,17 @@ main ()
 		ShowMenu();
 	}
 	if ( i == 4 ) Dir();
+  	/* Manage options in menu */
 	if ( i == 10 ) {
 		ShowOpts();
 		c = ( rotlcd == 0 ) ? '0' : '1';
 		ZXChar(c,184,96,fntsel,6,2);
+		c = ( fntsel == 0 ) ? '0' : '1';
+		ZXChar(c,184,96-8,fntsel,6,2);
+		c = ( ba == 0 ) ? '0' : '1';
+		ZXChar(c,184,96+8,fntsel,6,2);
+		c = 48 + prtsz; 
+		ZXChar(c,184,96+16,fntsel,6,2);
 
 		while (1) {
 			i = inkey();
@@ -577,6 +557,21 @@ main ()
 				if (rotlcd == 0) ba=1;
 				ShowMenu();
 				break;
+			}
+
+			if ( i == 2 ) {
+				fntsel = (fntsel == 0) ? 1 : 0;
+				ShowOpts();
+				c = ( fntsel == 0 ) ? '0' : '1';
+				ZXChar(c,184,96-8,fntsel,6,2);
+			}
+
+			if ( i == 5 ) {
+				prtsz++;
+				if (prtsz > 2) prtsz=0;
+				ShowOpts();
+				c = 48 + prtsz; 
+				ZXChar(c,184,96+16,fntsel,6,2);
 			}
 
 			if ( i == 11 ) {
