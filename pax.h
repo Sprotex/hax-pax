@@ -2,7 +2,7 @@ int inkey();
 void handle_x();
 void handle_event();
 
-int realx,realy;
+extern int realx,realy;
 //extern int rtc_fd;
 
 
