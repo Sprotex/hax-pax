@@ -9,6 +9,10 @@ LIBS =  /usr/arm-linux-gnueabi/lib/
 
 all: zxem
 
+rebuild: 
+	make clean
+	make all
+
 z80tables.h: maketables.c
 	$(CC) -Wall $< -o maketables
 	./maketables > $@
