@@ -52,6 +52,8 @@ int joyval=0;		// Default joy value
 int intcnt=0;		// Interrupt counter
 int flstate;		// Actual status of flash (0 or 1 alternates between INK and PAPER)
 
+extern int sndstate;
+
 //static const char default_rtc[] = "/dev/rtc0";
 
 Z80_STATE state;
@@ -114,7 +116,9 @@ zxout (int port, int val)
 {
   int x,y,color;
   static int pb=0;
-  
+
+  if (port == 0xfe) sndstate = val & (1<<4);
+
   if ((port == 0xFE && ba == 1) && (rotlcd ==0)) {
 	
   	color = val&0x07; 
@@ -627,6 +631,7 @@ main ()
        This also handles keyboard, but it should be done in
        an independent thread
        */
+
         if  ((ms -lms) > 20 )//(cycles > 1024*10)
 	{
 	  handle_x(); // handle keyboard (keypad)
@@ -651,6 +656,7 @@ main ()
 
   ShowMenu();
   i=0;
+  prev_sec=-1;
 }
 /* End of emulation option */
 
@@ -668,6 +674,7 @@ main ()
 	// BLOCKING! - ak sa nasledujuci riadok odkomentuje, bude sa vyzadovat 
 	// kliknutie na touchscreen predtym ako sa otestuju kody klavesnice
 	//handle_event();
+	
 	sprintf(datetime,"X= %d, Y= %d     ",realx,realy);
 	ZXPrint(datetime,0,192-24,fntsel,0,7);
 

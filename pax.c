@@ -306,6 +306,22 @@ event()
     }                 
 }
 
+#define SNDBUF_SIZE 512  // to be adjusted xxx fixme ikon
+unsigned char sndbuf[SNDBUF_SIZE];
+int sndstate;
+
+//Synthesize Output Loop
+void dsp_sound_synth(void) {
+
+  int nwritten;
+
+  memset(sndbuf, sndstate ? 0x3f : 0x00, SNDBUF_SIZE);
+
+  //Send to dsp
+  nwritten = write(dsp_fd, sndbuf, SNDBUF_SIZE );
+  printf("SND dbg %d \n",nwritten);
+}
+
 /*
  This handles keyboard. Originally this was for X11
 */
@@ -315,6 +331,8 @@ handle_x()
   fd_set rfds;
   struct timeval tv;
   int retval;
+  
+  //dsp_sound_synth();
 
   /* Watch stdin (fd 0) to see when it has input. */
   FD_ZERO (&rfds);
@@ -493,10 +511,12 @@ void screen_init (void)
   i = fcntl(keypad_fd, F_GETFL,0);
   fcntl(keypad_fd, F_SETFL, i| O_NONBLOCK);
   
-  
-
   printer_fd = open ("/dev/printer", O_RDWR);
+
   dsp_fd = open("/dev/snd/dsp", O_WRONLY);
+  i = fcntl(dsp_fd, F_GETFL,0);
+  fcntl(dsp_fd, F_SETFL, i| O_NONBLOCK);
+
 
   rtc_fd = open(rtc, O_RDONLY);
         if (rtc_fd ==  -1) {
@@ -505,6 +525,9 @@ void screen_init (void)
         }
  
   touchpad_fd = open("/dev/tp", O_RDWR);  
+  i = fcntl(touchpad_fd, F_GETFL,0);
+  fcntl(dsp_fd, F_SETFL, i| O_NONBLOCK);
+
 	if ( touchpad_fd < 0 ) {
          perror("Unable to open touchscreen");
 	 //return -1; 
@@ -551,6 +574,7 @@ void screen_init (void)
 
   // sound test, does not work, to be analyzed later
   // write(dsp_fd,xxx,0x1000);
+  //dsp_sound_synth();
 
   fd = open ("/dev/fb", O_RDWR);
   
