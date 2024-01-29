@@ -52,6 +52,8 @@ int joyval=0;		// Default joy value
 int intcnt=0;		// Interrupt counter
 int flstate;		// Actual status of flash (0 or 1 alternates between INK and PAPER)
 
+char datetime[80];
+
 extern int sndstate;
 
 //static const char default_rtc[] = "/dev/rtc0";
@@ -220,6 +222,16 @@ int GetTime() {
 	                exit(errno);
         }
 	return retval;
+}
+
+void ShowTime() {
+		//ZXPrint("System date/time:",0,192-16,fntsel,1,7);
+		sprintf(datetime, "%02d-%02d-%4d",
+				rtc_tm.tm_mday, rtc_tm.tm_mon + 1, rtc_tm.tm_year + 1900);
+		ZXPrint(datetime,176,0,fntsel,1,7);
+		sprintf(datetime, "%02d:%02d:%02d",
+			        rtc_tm.tm_hour, rtc_tm.tm_min, rtc_tm.tm_sec);
+		ZXPrint(datetime,192,8,fntsel,1,7);
 }
 
 /* Load snap from given filename */
@@ -523,12 +535,7 @@ main ()
   GetTime();
   prev_sec = rtc_tm.tm_sec;
 
-  ZXPrint("System date/time:",0,192-16,fntsel,1,7);
-  sprintf(datetime, "%2d-%2d-%4d %02d:%02d:%02d",
-	rtc_tm.tm_mday, rtc_tm.tm_mon + 1, rtc_tm.tm_year + 1900,
-        rtc_tm.tm_hour, rtc_tm.tm_min, rtc_tm.tm_sec);
-
-  ZXPrint(datetime,0,192-8,fntsel,1,7);
+  ShowTime();
 
   /* Manage menu */
   while (1) {
@@ -682,11 +689,14 @@ main ()
 	curr_sec = rtc_tm.tm_sec;
 	if (curr_sec > prev_sec) {
 
-		ZXPrint("System date/time:",0,192-16,fntsel,1,7);
-		sprintf(datetime, "%2d-%2d-%4d %02d:%02d:%02d",
-				rtc_tm.tm_mday, rtc_tm.tm_mon + 1, rtc_tm.tm_year + 1900,
+		ShowTime();
+		//ZXPrint("System date/time:",0,192-16,fntsel,1,7);
+		sprintf(datetime, "%02d-%02d-%4d",
+				rtc_tm.tm_mday, rtc_tm.tm_mon + 1, rtc_tm.tm_year + 1900);
+		ZXPrint(datetime,176,0,fntsel,1,7);
+		sprintf(datetime, "%02d:%02d:%02d",
 			        rtc_tm.tm_hour, rtc_tm.tm_min, rtc_tm.tm_sec);
-		ZXPrint(datetime,0,192-8,fntsel,1,7);
+		ZXPrint(datetime,192,8,fntsel,1,7);
 		if (curr_sec == 59) {
 			prev_sec = -1;
 		} else {
