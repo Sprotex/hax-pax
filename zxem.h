@@ -10,6 +10,7 @@ extern int kbdjoy;
 extern int flstate;
 extern int rtc_fd;
 extern int realx,realy;
+extern int touch_up;
 extern int fntsel;
 extern int prtsz;
 

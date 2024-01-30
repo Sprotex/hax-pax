@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY an anoumous author AS IS AND ANY EXPRESS OR IMPLIED
 #include <dirent.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include <linux/rtc.h>
 #include <sys/time.h>
@@ -55,6 +56,7 @@ int flstate;		// Actual status of flash (0 or 1 alternates between INK and PAPER
 char datetime[80];
 
 extern int sndstate;
+void *handle_touch( void *ptr );
 
 //static const char default_rtc[] = "/dev/rtc0";
 
@@ -480,35 +482,20 @@ int LoadROM(void) {
   return 0;
 }
 
-/* Main loop start */
-int
-main ()
-{
-  //char *romfilename;
-  //char *snafilename;
-  //int romsize;
-  //int fd;
+void *handle_touch( void *ptr ) {
+
+     while  (1) 
+     handle_event();
+
+}
+
+void *menu( void *ptr ) {
+
   int cycles;
   int i;
-  //struct stat sb;
   unsigned char c;
   int curr_sec, prev_sec;
- 
   char datetime[80];
-
-  //char *snap;
-//  Z80_STATE state;
-
-//  unsigned char *snadata;
-// int snasize;
-
-//  romfilename = "zx48.rom";
-//  snafilename = "manic.sna";
-// snafilename = "horace.sna";
-// snafilename = "ThroTheWall.sna";
-// snafilename = "Uridium.sna";
-//   snafilename = "diag.sna";
-//   snafilename = "48z80ful.sna";
 
   memory = (unsigned char *) malloc (0x10000);
   memset (memory, 0, 0x10000);
@@ -705,5 +692,35 @@ main ()
 
 
 	}
+  }
+}
+
+/* Main loop start */
+int
+main ()
+{
+  
+  pthread_t thread1, thread2;
+  char *message1 = "Touchpad";
+  char *message2 = "Menu";
+  int  iret1, iret2;
+
+  while (1) {
+	/* Create independent threads each of which will execute function */
+
+	iret1 = pthread_create( &thread1, NULL, handle_touch, (void*) message1);
+	iret2 = pthread_create( &thread2, NULL, menu, (void*) message2);
+
+	/* Wait till threads are complete before main continues. Unless we  */
+	/* wait we run the risk of executing an exit which will terminate   */
+	/* the process and all threads before the threads have completed.   */
+
+	pthread_join( thread1, NULL);
+	pthread_join( thread2, NULL);
+
+        fprintf(stderr,"Thread 1 returns: %d\n",iret1);
+        fprintf(stderr,"Thread 2 returns: %d\n",iret2);
+        fflush(stderr);
+
   }
 }

@@ -27,6 +27,7 @@ static int dsp_fd = -1;   // sound device, not finished yet
 static int touchpad_fd = -1;
 int realx = 0; 
 int realy = 0; 
+int touch_up = 0;
 struct input_event ev0[64]; 
 
 int rtc_fd = -1;
@@ -373,6 +374,12 @@ void touch_event() {
 			  realx = ev0[i].value;
 		  } else if (ev0[i].type == 3 && ev0[i].code == ABS_Y) {
 			  realy = ev0[i].value;
+		  }
+
+		  if (ev0[i].type == 24) {
+			  touch_up = 1;
+		  } else {
+			  touch_up = 0;
 		  }
 	}
 
