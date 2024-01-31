@@ -484,6 +484,9 @@ int LoadROM(void) {
 
 void *handle_touch( void *ptr ) {
 
+     //long i;
+     //for(i=0;i<100000;i++) asm("nop");
+
      while  (1) 
      handle_event();
 

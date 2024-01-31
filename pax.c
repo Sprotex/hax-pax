@@ -361,27 +361,65 @@ Touchscreen handling routine
 
 void touch_event() {
 
-    int rd, i;
+    int rd, i, c, r;
 
 	 rd = read(touchpad_fd, ev0, sizeof(struct input_event) * 64);
 
   	if (rd < sizeof (struct input_event))
     		return;
 
+         //fprintf(stderr,"sizeof(struct input_event) = %d\n", sizeof(struct input_event));
+
 	 for (i = 0; i < rd / sizeof(struct input_event); i++) {
-	 	 //printf("", ev0[i].type, ev0[i].code, ev0[i].value);
+         	  fprintf(stderr,"event(%d): type: %d; code: %3d; value: %3d; realx: %3d; realy: %3d\n", i, ev0[i].type, ev0[i].code, ev0[i].value, realx, realy);
 	 	  if (ev0[i].type == 3 && ev0[i].code == ABS_X) { 
 			  realx = ev0[i].value;
 		  } else if (ev0[i].type == 3 && ev0[i].code == ABS_Y) {
 			  realy = ev0[i].value;
 		  }
 
-		  if (ev0[i].type == 24) {
-			  touch_up = 1;
-		  } else {
-			  touch_up = 0;
+		  /* Determine if touch is pressed or released */
+		  if (ev0[i].type == 1 && ev0[i].code == 330) {
+			  if (ev0[i].value == 1) {
+				  touch_up = 0;		// Pressed
+			  } else {
+			  	  touch_up = 1;		// Released
+			  }
 		  }
 	}
+	// Left half of kbd	
+	for(c=0;c<5;c++) {
+
+	   for(r=0;r<4;r++) {
+	   /* 1 - 5 */
+	      if ( (realx < 128-r*32) && (realx > 96-r*32) && (realy < 24+24*c) && (realy > 24*c) ) {
+	         if (touch_up == 0) {
+	      	    // Press
+	     	    kbdlines[3-r] = ~(1 << c);/* 1 */
+	          } else {
+	      	    // Release
+	       	    kbdlines[3-r] = 0xff;
+	          }
+	      }
+	   }
+	}
+
+	// Right half of kbd	
+	for(c=0;c<5;c++) {
+
+	   for(r=0;r<4;r++) {
+	   /* 6 - 0 */
+	      if ( (realx < 128-r*32) && (realx > 96-r*32) && (realy < 240-24*c) && (realy > 216-(24*c)) ) {
+	         if (touch_up == 0) {
+	      	    // Press
+	     	    kbdlines[4+r] = ~(1 << c);/* 0 */
+	          } else {
+	      	    // Release
+	       	    kbdlines[4+r] = 0xff;
+	          }
+	      }
+	   }
+	}	
 
 }
 
