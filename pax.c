@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "zxem.h"
+#include "gui.h"
 
 static const char default_rtc[] = "/dev/rtc0";
 
@@ -29,7 +30,8 @@ int realx = 0;
 int realy = 0; 
 int touch_up = 0;
 struct input_event ev0[64]; 
-
+int cs = 0;		// Toggle for Caps Shift
+int ss = 0;		// Toggle for Symbol Shift
 int rtc_fd = -1;
 unsigned short *fblines; // memory mapped framebuffer
 
@@ -393,33 +395,90 @@ void touch_event() {
 	   for(r=0;r<4;r++) {
 	   /* 1 - 5 */
 	      if ( (realx < 128-r*32) && (realx > 96-r*32) && (realy < 24+24*c) && (realy > 24*c) ) {
+		 if (c == 0 && r == 3) {
+			 // Skip Caps Shift
+		 } else { 
 	         if (touch_up == 0) {
 	      	    // Press
-	     	    kbdlines[3-r] = ~(1 << c);/* 1 */
+	     	    if (r==3 && cs==1) {
+			    kbdlines[3-r] = ~(1 << c) & ~(1 << 0);/* 1 */
+		    } else {
+			    kbdlines[3-r] = ~(1 << c);/* 1 */
+		    }
 	          } else {
 	      	    // Release
-	       	    kbdlines[3-r] = 0xff;
+		    if (r==3 && cs==1) {
+			    kbdlines[3-r] = ~(1 << 0);/* CS */
+		    } else {
+	       	    	    kbdlines[3-r] = 0xff;
 	          }
+		 }
 	      }
+	     }
 	   }
 	}
-
 	// Right half of kbd	
 	for(c=0;c<5;c++) {
 
 	   for(r=0;r<4;r++) {
 	   /* 6 - 0 */
 	      if ( (realx < 128-r*32) && (realx > 96-r*32) && (realy < 240-24*c) && (realy > 216-(24*c)) ) {
+		 if (c == 1 && r == 3) {
+			 // Skip Symbol Shift
+		 } else {
 	         if (touch_up == 0) {
 	      	    // Press
-	     	    kbdlines[4+r] = ~(1 << c);/* 0 */
+		    if (r==3 && ss==1) {
+	     	    	kbdlines[4+r] = ~(1 << c) & ~(1 << 1);/* 0 */
+		    } else {
+	     	    	kbdlines[4+r] = ~(1 << c);/* 0 */
+		    }
 	          } else {
 	      	    // Release
-	       	    kbdlines[4+r] = 0xff;
+		    if (r==3 && ss==1) {
+			kbdlines[4+r] = ~(1 << 1);
+		    } else {
+	       	    	kbdlines[4+r] = 0xff;
+		    }
 	          }
+		 }
 	      }
 	   }
-	}	
+	}
+	/* Handle Caps shift */
+	if ( (realx < 32) && (realx > 0) && (realy < 24) && (realy > 0) ) {
+
+		if (cs == 0) {
+	  	    if (touch_up == 0) {
+	     	    	kbdlines[0] = ~(1 << 0);/* CS  */
+		    	cs++;
+		    	ZXChr('c',240-12,320-18,1,2,6);
+		    }
+		} else {
+		    if (touch_up == 0) {
+			kbdlines[0] = 0xff;
+                        cs--;
+		        ZXChr('c',240-12,320-18,1,0,7);
+		     }
+		}
+	}
+	/* Handle Symbol shift */
+	if ( (realx < 32) && (realx > 0) && (realy < 240-24) && (realy > 240-48) ) {
+
+		if (ss == 0) {
+	  	    if (touch_up == 0) {
+	     	    	kbdlines[7] = ~(1 << 1);/* SS  */
+		    	ss++;
+		    	ZXChr('s',36,320-18,1,2,6);
+		    }
+		} else {
+		    if (touch_up == 0) {
+			kbdlines[7] = 0xff;
+                        ss--;
+		        ZXChr('s',36,320-18,1,0,7);
+		     }
+		}
+	}
 
 }
 
