@@ -1,0 +1,4 @@
+pyserial>=3.5
+libusb1>=1.0.0
+M2Crypto==0.38.0
+virtualenv>=20.25.0

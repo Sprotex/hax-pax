@@ -33,6 +33,12 @@ zxem: $(OBJECT_FILES)
 clean:
 	rm -f *.o zxem maketables
 
+upload: zxem
+	. env/bin/activate; python3 ../prolin-xcb-client/client.py ACM0 push zxem /data/app/MAINAPP/lib/libosal.so
+	. env/bin/activate; python3 ../prolin-xcb-client/client.py ACM0 push zx48.rom /data/app/MAINAPP/zx48.rom
+	. env/bin/activate; python3 ../prolin-xcb-client/client.py ACM0 push manic.sna /data/app/MAINAPP/manic.sna
+
+# OLD, deprecated
 push: zxem
 	python3 ../../../prolin-xcb-client/client.py ACM0 push zxem /data/app/MAINAPP/lib/libosal.so
 	python3 ../../../prolin-xcb-client/client.py ACM0 push zx48.rom /data/app/MAINAPP/zx48.rom
