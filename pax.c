@@ -597,16 +597,11 @@ putpx (int x, int y, int color )
         printf(#argument "\t:= %d\n", arg);\
 }
 
-/*
- This initializes all PAX related stuff.
- 
- Originally there was X11 screen init
-*/
-void screen_init (void)
-{
-  int fd;
-  int i, j;
-  
+/* Init PAX devices to allow user interaction */
+void dev_init(void) {
+
+  int i;
+
   const char *rtc = default_rtc;
 
   // xxx add checks ! 
@@ -675,11 +670,18 @@ void screen_init (void)
         BlockSize = SampleRate/Blocks;
   synth();
   // End sound check
+}
 
-  // sound test, does not work, to be analyzed later
-  // write(dsp_fd,xxx,0x1000);
-  //dsp_sound_synth();
-
+/*
+ This initializes all PAX related stuff.
+ 
+ Originally there was X11 screen init
+*/
+void screen_init (void)
+{
+  int fd;
+  int i, j;
+  
   fd = open ("/dev/fb", O_RDWR);
   
   // fill space above

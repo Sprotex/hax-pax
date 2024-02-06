@@ -236,6 +236,81 @@ void ShowTime() {
 		ZXPrint(datetime,192,8,fntsel,1,7);
 }
 
+/* Save snapshot */
+
+int SaveSNA(void) {
+      int snasize = 49179;		//sb.st_size;
+      int fd,res;
+
+      unsigned char snadata[49179];
+
+      char* fileName = "sna001.sna";
+
+      fd = open(fileName,O_RDWR);
+
+      if(fd == -1){
+      	fprintf(stderr,"\nError Opening File!!\n");
+	fflush(stderr);
+        return(1);
+      } else {   
+        fprintf(stderr,"\nFile %s opened successfully!\n", fileName);
+      }
+
+      snadata[0] = state.i;
+      snadata[1] = ((unsigned char *) state.alternates)[Z80_L];
+      snadata[2] = ((unsigned char *) state.alternates)[Z80_H];
+      snadata[3] = ((unsigned char *) state.alternates)[Z80_E];
+      snadata[4] = ((unsigned char *) state.alternates)[Z80_D];
+      snadata[5] = ((unsigned char *) state.alternates)[Z80_C];
+      snadata[6] = ((unsigned char *) state.alternates)[Z80_B];
+      snadata[7] = ((unsigned char *) state.alternates)[Z80_F];
+      snadata[8] = ((unsigned char *) state.alternates)[Z80_A];
+     
+      snadata[9] = state.registers.byte[Z80_L];  
+      snadata[10] = state.registers.byte[Z80_H];
+      snadata[11] = state.registers.byte[Z80_E];
+      snadata[12] = state.registers.byte[Z80_D];
+      snadata[13] = state.registers.byte[Z80_C];
+      snadata[14] = state.registers.byte[Z80_B];
+      
+      snadata[15] = state.registers.byte[Z80_IYL];
+      snadata[16] = state.registers.byte[Z80_IYH];
+      
+      snadata[17] = state.registers.byte[Z80_IXL];
+      snadata[18] = state.registers.byte[Z80_IXH];
+
+      if (state.iff2 != 0) {
+	      snadata[19] = 0;
+      } else {
+	      snadata[19] = 4;
+      } 
+
+      snadata[20] = state.r;
+      snadata[21] = state.registers.byte[Z80_F];
+      snadata[22] = state.registers.byte[Z80_A];
+      
+      snadata[23] = state.registers.byte[Z80_SPL];
+      snadata[24] = state.registers.byte[Z80_SPH];
+      snadata[25] = state.im;
+      snadata[26] = 4;	// Border
+
+      memcpy (&snadata[0x1b],&memory[0x4000],0xC000);
+
+      fprintf(stderr,"Len: %d\n",sizeof(snadata));
+      fflush(stderr);
+
+      res = write(fd, snadata, snasize); 
+
+      if (res != snasize) { 
+	      fprintf(stderr,"SNA save error!\n");
+      	      fflush(stderr);
+      }
+
+      close(fd); 
+
+      return 0;
+}
+
 /* Load snap from given filename */
 int LoadSNA(char *name) {
 
@@ -271,8 +346,6 @@ int LoadSNA(char *name) {
 
       snap = snadata;
       
-      // xxx may be wrong!!
-
       state.i = *(snap++);
       ((unsigned char *) state.alternates)[Z80_L] = *(snap++); 
       ((unsigned char *) state.alternates)[Z80_H] = *(snap++); 
@@ -313,7 +386,7 @@ int LoadSNA(char *name) {
       state.registers.byte[Z80_SPL] = *(snap++);  //was L
       state.registers.byte[Z80_SPH] = *(snap++);   // was H
       state.im =  *(snap++);
-      //output(254, *(snap++) & 7);
+      zxout(254, *(snap++) & 7);
 
       state.pc = memory[state.registers.word[Z80_SP]];
       state.registers.word[Z80_SP]++; 
@@ -365,7 +438,11 @@ void Dir(void) {
     char fname[30];
     char fnum[3];
 
-    cnt = (1+cur/10)*10;
+    if (i < 10 ) {
+	    cnt = i;
+    } else {
+	    cnt = (1+cur/10)*10;
+    }
 
     for(m=0;m<30;m++) fname[m]='\0';
     /* Show one page of files if list is longer than 10 entries */
@@ -515,9 +592,7 @@ void *menu( void *ptr ) {
   flstate = 0;
 
   LoadROM();
-
   Z80Reset (&state);
-
   state.pc = 0x0000;
 
   ShowMenu();
@@ -538,6 +613,13 @@ void *menu( void *ptr ) {
 		ZXCls();
 		ShowMenu();
 	}
+	if ( i == 3 ) {
+		emurun = 0;
+		SaveSNA();
+	   	ZXPrint("sna001.sna saved, press 0 to ret",0,176,fntsel,1,5);
+		emurun = 1;
+	}
+
 	if ( i == 4 ) Dir();
   	/* Manage options in menu */
 	if ( i == 10 ) {
@@ -610,7 +692,10 @@ void *menu( void *ptr ) {
 
   cycles = 0;
 
-  if (i == 6) { state.pc = 0x0000; }
+  if (i == 6) { 
+	state.pc = 0x0000; 
+  	Z80Reset (&state);
+  }
   emurun=1;
 
   while (emurun==1)
@@ -702,11 +787,16 @@ void *menu( void *ptr ) {
 int
 main ()
 {
-  
+  long x;
+
   pthread_t thread1, thread2;
   char *message1 = "Touchpad";
   char *message2 = "Menu";
   int  iret1, iret2;
+
+  dev_init();
+
+  for(x=0;x<100000;x++) asm("nop"); // Wait cycle before running threads
 
   while (1) {
 	/* Create independent threads each of which will execute function */

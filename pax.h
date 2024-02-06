@@ -2,6 +2,7 @@ int inkey();
 void handle_x();
 void handle_event();
 void dsp_sound_synth();
+void dev_init(void);
 
 extern int realx,realy;
 //extern int rtc_fd;
