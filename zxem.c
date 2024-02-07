@@ -37,9 +37,10 @@ int rotlcd=1;		// Rotate screen and shrink
 int ba=0;		// Border active
 int prtsz=0;		// Print size
 
-long int lms;
+unsigned long int lms,ms;	// Last millis and current millis
 struct rtc_time rtc_tm; 
 struct timeval tp;
+static int rtc_fd = -1;
 
 // Directory entries variables
 DIR *d;
@@ -58,7 +59,7 @@ char datetime[80];
 extern int sndstate;
 void *handle_touch( void *ptr );
 
-//static const char default_rtc[] = "/dev/rtc0";
+static const char default_rtc[] = "/dev/rtc0";
 
 Z80_STATE state;
 /*
@@ -236,8 +237,7 @@ void ShowTime() {
 		ZXPrint(datetime,192,8,fntsel,1,7);
 }
 
-/* Save snapshot */
-
+/* Save snapshot */ 
 int SaveSNA(void) {
       int snasize = 49179;		//sb.st_size;
       int fd,res;
@@ -559,16 +559,15 @@ int LoadROM(void) {
   return 0;
 }
 
+/* Read the value of touchscreen coordinates */
 void *handle_touch( void *ptr ) {
-
-     //long i;
-     //for(i=0;i<100000;i++) asm("nop");
 
      while  (1) 
      handle_event();
 
 }
 
+/* Main menu including emulation */
 void *menu( void *ptr ) {
 
   int cycles;
@@ -581,8 +580,9 @@ void *menu( void *ptr ) {
   memset (memory, 0, 0x10000);
 
   // Init keyboard and emulate no key press initially
-  for (i = 0; i < 8; i++)
-    kbdlines[i] = 0x1f;
+  kbd_init();
+  //for (i = 0; i < 8; i++)
+  //  kbdlines[i] = 0x1f;
 
   emurun=0;
   fntsel=1;
@@ -613,8 +613,10 @@ void *menu( void *ptr ) {
 		ZXCls();
 		ShowMenu();
 	}
+
 	if ( i == 3 ) {
 		emurun = 0;
+		kbd_init();
 		SaveSNA();
 	   	ZXPrint("sna001.sna saved, press 0 to ret",0,176,fntsel,1,5);
 		emurun = 1;
@@ -688,20 +690,26 @@ void *menu( void *ptr ) {
   } else {
 	tkbd2lcd(0);
 	scr2lcd(1);
+  	kbd_init();
   }
 
   cycles = 0;
 
   if (i == 6) { 
 	state.pc = 0x0000; 
-  	Z80Reset (&state);
+  	//Z80Reset (&state);
   }
+
   emurun=1;
+
+  gettimeofday(&tp, NULL);
+  lms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
   while (emurun==1)
     {
       gettimeofday(&tp, NULL);
-      long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+      ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+
       cycles += Z80Emulate (&state, 200 /*cycles */ , NULL);
       
       for (int o = 0; o < (1000); o++) asm("nop"); //zpomlait
@@ -712,16 +720,21 @@ void *menu( void *ptr ) {
        
        This also handles keyboard, but it should be done in
        an independent thread
-       */
+       
+	fprintf(stderr,"Before interrupt: b=%lums c=%lums\n",lms,ms);
+	fflush(stderr);
+	*/
 
-        if  ((ms -lms) > 20 )//(cycles > 1024*10)
+        if  ((ms-lms) > 20 )
+	//(cycles > 1024*10)
 	{
 	  handle_x(); // handle keyboard (keypad)
-	  //handle_event();
 	  Z80Interrupt (&state, 0, NULL);
 	  cycles = 0;
 	  intcnt++;
 	  lms = ms;
+	  //fprintf(stderr,"Inside interrupt: %lums\n",ms);
+	  //fflush(stderr);
 	}
 
       	if (intcnt == 25) {
@@ -789,14 +802,23 @@ main ()
 {
   long x;
 
+  const char *rtc = default_rtc;
+
   pthread_t thread1, thread2;
   char *message1 = "Touchpad";
   char *message2 = "Menu";
   int  iret1, iret2;
 
-  dev_init();
+  dev_init();			    // Initialize devices
 
-  for(x=0;x<100000;x++) asm("nop"); // Wait cycle before running threads
+  rtc_fd = open(rtc, O_RDONLY);
+        if (rtc_fd ==  -1) {
+                fprintf(stderr,"Error init RTC: %s!\n",rtc);
+                fflush(stderr);
+                exit(errno);
+        }
+
+  for(x=0;x<10000;x++) asm("nop"); // Wait cycle before running threads
 
   while (1) {
 	/* Create independent threads each of which will execute function */

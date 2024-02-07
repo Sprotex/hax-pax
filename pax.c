@@ -16,23 +16,26 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 
 #include "zxem.h"
 #include "gui.h"
 
-static const char default_rtc[] = "/dev/rtc0";
+//static const char default_rtc[] = "/dev/rtc0";
 
 static int keypad_fd = -1; // keypad input device
 static int printer_fd = -1; // printer output device
 static int dsp_fd = -1;   // sound device, not finished yet
 static int touchpad_fd = -1;
+//static int rtc_fd = -1;
+
 int realx = 0; 
 int realy = 0; 
 int touch_up = 0;
 struct input_event ev0[64]; 
+
 int cs = 0;		// Toggle for Caps Shift
 int ss = 0;		// Toggle for Symbol Shift
-int rtc_fd = -1;
 unsigned short *fblines; // memory mapped framebuffer
 
 void printscreen() {
@@ -602,7 +605,7 @@ void dev_init(void) {
 
   int i;
 
-  const char *rtc = default_rtc;
+  //const char *rtc = default_rtc;
 
   // xxx add checks ! 
 
@@ -615,14 +618,14 @@ void dev_init(void) {
   dsp_fd = open("/dev/snd/dsp", O_WRONLY);
   i = fcntl(dsp_fd, F_GETFL,0);
   fcntl(dsp_fd, F_SETFL, i| O_NONBLOCK);
-
-
+/*
   rtc_fd = open(rtc, O_RDONLY);
         if (rtc_fd ==  -1) {
-                perror(rtc);
-                //exit(errno);
+                fprintf(stderr,"Error init RTC: %s!\n",rtc);
+		fflush(stderr);
+                exit(errno);
         }
- 
+*/ 
   touchpad_fd = open("/dev/tp", O_RDWR);  
   i = fcntl(touchpad_fd, F_GETFL,0);
   fcntl(dsp_fd, F_SETFL, i| O_NONBLOCK);
@@ -691,4 +694,11 @@ void screen_init (void)
       {
 	fblines[j + i * 320] = RGB(0,0xff,0xff); //i * j;
       }
+}
+
+/* Initialize ZX keyboard lines to default state */
+void kbd_init(void) {
+	int i;
+
+	for(i=0;i<8;i++) kbdlines[i]=0x1F;
 }

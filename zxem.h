@@ -8,7 +8,7 @@ extern int rotlcd;
 extern int joyval;
 extern int kbdjoy;
 extern int flstate;
-extern int rtc_fd;
+//extern int rtc_fd;
 extern int realx,realy;
 extern int touch_up;
 extern int fntsel;
@@ -25,4 +25,3 @@ void putpix(int x, int y, int color);
 void putpx(int x, int y, int color);
 
 void redrawblock(int addr, int val);
-
