@@ -38,6 +38,17 @@ int cs = 0;		// Toggle for Caps Shift
 int ss = 0;		// Toggle for Symbol Shift
 unsigned short *fblines; // memory mapped framebuffer
 
+// Sound related definitions
+//Device Parameters
+const int SampleRate = 48000,
+        Channels   = 1,//mono
+        SampleBits = 8;
+
+//Sound Buffer
+uint8_t buf[48000];
+unsigned Blocks    = 500;
+
+/* Print ZX screen from PAX */
 void printscreen() {
   unsigned char prnbuf[2+48*192];
   int i;
@@ -312,20 +323,12 @@ event()
     }                 
 }
 
-#define SNDBUF_SIZE 512  // to be adjusted xxx fixme ikon
-unsigned char sndbuf[SNDBUF_SIZE];
-int sndstate;
-
 //Synthesize Output Loop
-void dsp_sound_synth(void) {
-
-  int nwritten;
-
-  memset(sndbuf, sndstate ? 0x3f : 0x00, SNDBUF_SIZE);
+void dsp_sound_synth(uint8_t *buff, int len) {
 
   //Send to dsp
-  nwritten = write(dsp_fd, sndbuf, SNDBUF_SIZE );
-  printf("SND dbg %d \n",nwritten);
+  if( write(dsp_fd, buff, len) != len )
+  	fprintf(stderr,"SND err\n");
 }
 
 /*
@@ -337,7 +340,7 @@ handle_x()
   fd_set rfds;
   struct timeval tv;
   int retval;
-  
+
   //dsp_sound_synth();
 
   /* Watch stdin (fd 0) to see when it has input. */
@@ -600,6 +603,43 @@ putpx (int x, int y, int color )
         printf(#argument "\t:= %d\n", arg);\
 }
 
+/* Sound routines for test */
+
+  //Synthesize Output Loop
+  void synth(void) {
+  	char state = 0;
+	unsigned BlockSize = SampleRate/Blocks;
+  
+        //1s Square Wave Syntheis
+        for(unsigned i=0; i<Blocks; ++i) {
+            state = !state;
+            memset(buf+i*BlockSize, state ? 0x1f : 0x00, BlockSize);
+        }
+
+        //Send to Soundcard
+        if(write(dsp_fd, buf, sizeof(buf)) != SampleRate)
+            perror("wrote wrong number of bytes");
+  
+   }
+
+  void synth2(void) {
+	int i;
+	char state=0;
+
+	for(i=0;i<SampleRate;i++) {
+		if (i % (48)) state = !state;
+	        buf[i]=state ? 0x1f : 0x00;
+	}
+
+
+        //Send to Soundcard
+        if(write(dsp_fd, buf, sizeof(buf)) != SampleRate)
+            perror("wrote wrong number of bytes");
+
+
+  }
+
+
 /* Init PAX devices to allow user interaction */
 void dev_init(void) {
 
@@ -635,45 +675,17 @@ void dev_init(void) {
 	 //return -1; 
 	}
 
-  // sound test, does not work, to be analyzed later
-  //
-  //Device Parameters
-  const int SampleRate = 48000,
-          Channels   = 1,//mono
-          SampleBits = 8;
-
   //Configure Sound Device
   ioset(SOUND_PCM_WRITE_BITS,     SampleBits);
   ioset(SOUND_PCM_WRITE_CHANNELS, Channels);
   ioset(SOUND_PCM_WRITE_RATE,     SampleRate);
-
-  //Sound Buffer
-  uint8_t buf[SampleRate];
-  unsigned Blocks    = 1000,
-                   BlockSize = SampleRate/Blocks;
-
-  //Synthesize Output Loop
-  void synth(void) {
-  char state = 0;
-  {
-        //1s Square Wave Syntheis
-        for(unsigned i=0; i<Blocks; ++i) {
-            state = !state;
-            memset(buf+i*BlockSize, state ? 0x1f : 0x00, BlockSize);
-      }
-
-        //Send to Soundcard
-        if(write(dsp_fd, buf, sizeof(buf)) != SampleRate)
-            perror("wrote wrong number of bytes");
-  }
-}
-
-  synth();
-  Blocks = 500,
-        BlockSize = SampleRate/Blocks;
+  
+  synth2();
+  //Blocks = 1000;
   synth();
   // End sound check
 }
+
 
 /*
  This initializes all PAX related stuff.

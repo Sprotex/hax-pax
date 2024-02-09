@@ -700,7 +700,8 @@ void ShowOpts() {
        ZXPrint("2. Screen orientation: ",0,96,fntsel,0,7);
        ZXPrint("3. Border emulation: ",0,104,fntsel,0,7);
        ZXPrint("4. Print size: ",0,112,fntsel,0,7);
-       ZXPrint("0. Exit options",0,120,fntsel,0,7);
+       ZXPrint("5. Sound (experiment): ",0,120,fntsel,0,7);
+       ZXPrint("0. Exit options",0,128,fntsel,0,7);
 }
 
 #ifdef TEST_PRINTF

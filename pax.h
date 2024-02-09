@@ -4,6 +4,8 @@ void handle_event();
 void dsp_sound_synth();
 void dev_init(void);
 void kbd_init(void);
+void synth2(void);
+void synth(void);
 
 extern int realx,realy;
 //extern int rtc_fd;

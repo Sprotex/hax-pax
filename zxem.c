@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY an anoumous author AS IS AND ANY EXPRESS OR IMPLIED
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <pthread.h>
+#include <stdint.h>
 
 #include <linux/rtc.h>
 #include <sys/time.h>
@@ -36,6 +37,7 @@ int fntsel=0;		// Select font
 int rotlcd=1;		// Rotate screen and shrink
 int ba=0;		// Border active
 int prtsz=0;		// Print size
+int snden=0;		// Sound enable
 
 unsigned long int lms,ms;	// Last millis and current millis
 struct rtc_time rtc_tm; 
@@ -55,8 +57,11 @@ int intcnt=0;		// Interrupt counter
 int flstate;		// Actual status of flash (0 or 1 alternates between INK and PAPER)
 
 char datetime[80];
+int sndstate=0;
+#define SNDBUF_SIZE 2*48
+uint8_t sndbuf[SNDBUF_SIZE];
+int rpl;
 
-extern int sndstate;
 void *handle_touch( void *ptr );
 
 static const char default_rtc[] = "/dev/rtc0";
@@ -121,8 +126,19 @@ zxout (int port, int val)
 {
   int x,y,color;
   static int pb=0;
+  static int ofs=0;
 
-  if (port == 0xfe) sndstate = val & (1<<4);
+  if ( ((port & 0xFF) == 0xFE) && (snden == 1)  ) {
+//	  sndstate = val & (1<<4);
+	  sndstate = val & 0x10;
+	  sndbuf[ofs++] = sndstate ? 0x1f : 0x00;
+	  if (ofs == SNDBUF_SIZE / 2) dsp_sound_synth(&sndbuf[0],SNDBUF_SIZE/2);
+	  if (ofs >= SNDBUF_SIZE) {
+		dsp_sound_synth(&sndbuf[SNDBUF_SIZE/2],SNDBUF_SIZE/2);
+	  	ofs=0;
+	  }
+
+  }
 
   if ((port == 0xFE && ba == 1) && (rotlcd ==0)) {
 	
@@ -563,9 +579,91 @@ int LoadROM(void) {
 void *handle_touch( void *ptr ) {
 
      while  (1) 
-     handle_event();
+       handle_event();
 
 }
+
+/* Emulate beeper */
+void *do_sound( void *ptr ) {
+
+//#define SNDBUF_SIZE 2*48000
+//	uint8_t sndbuf[SNDBUF_SIZE];
+	//int sndstate;
+/*	struct timeval s_tp;
+	unsigned long lusec,usec,ms,s=0;
+	int off=0,pl_at=0;
+	int lstate=0;
+	//uint8_t tmpbuf[SNDBUF_SIZE];	// Buffer 2
+	int chunk=48;
+	int i,rpl=0;
+
+  	gettimeofday(&s_tp, NULL);
+  	lusec = s_tp.tv_usec;
+*/
+	while (1) {
+	  	// Test if ready to play
+		if (rpl > 0)  {
+			//dsp_sound_synth(&sndbuf[(rpl -1) ? 0 : SNDBUF_SIZE / 2 ],SNDBUF_SIZE/2);
+			rpl=0;
+		}
+
+		asm("nop");
+		/*
+//	memset(sndbuf,0x80,SNDBUF_SIZE);
+        for(i=0;i<SNDBUF_SIZE;i++) {
+		if (i % (48)) lstate = !lstate;
+	        sndbuf[i] = lstate ? 0x1f : 0x00;
+	}
+	
+	while(1)  {
+
+
+		dsp_sound_synth(&sndbuf[0],SNDBUF_SIZE / 2);
+
+
+	while (1) {
+	   
+
+	  	gettimeofday(&s_tp, NULL);
+  		usec = s_tp.tv_usec;
+
+		if (abs(usec-lusec) >= 1000) {
+			ms++;
+			lusec = usec;
+
+		if (ms >= 1000) {
+			ms=0;
+			if (!s) pl_at=0; else pl_at=SNDBUF_SIZE / 2;
+			s = !s;
+			rpl=1;
+		}
+		}
+
+	   	//for(lp=0;lp<2;lp++) asm("nop");
+		//asm("nop");
+		//if (off % chunk ) lstate = !lstate;
+		//sndbuf[off] = ( sndstate == 0 ) ? 0x1f : 0x00;
+		//sndbuf[off] = lstate ? 0x1f : 0x00;
+		//off++;
+		//lusec = usec;
+			if (off == (SNDBUF_SIZE / 2)) {
+				rpl=1;
+				pl_at=0;
+			}
+
+		if (off >= SNDBUF_SIZE) {
+			off=0;
+			pl_at=SNDBUF_SIZE/2;
+			rpl=2;
+		}
+		}
+
+	  //}
+
+
+*/	
+	} // Endless while
+} // End of pthread 
 
 /* Main menu including emulation */
 void *menu( void *ptr ) {
@@ -634,6 +732,8 @@ void *menu( void *ptr ) {
 		ZXChar(c,184,96+8,fntsel,6,2);
 		c = 48 + prtsz; 
 		ZXChar(c,184,96+16,fntsel,6,2);
+		c = ( snden == 0 ) ? '0' : '1';
+		ZXChar(c,184,96+24,fntsel,6,2);
 
 		while (1) {
 			i = inkey();
@@ -657,6 +757,13 @@ void *menu( void *ptr ) {
 				ShowOpts();
 				c = 48 + prtsz; 
 				ZXChar(c,184,96+16,fntsel,6,2);
+			}
+
+			if ( i == 6 ) {
+				snden = (snden == 0) ? 1 : 0;
+				ShowOpts();
+				c = ( snden == 0 ) ? '0' : '1';
+				ZXChar(c,184,96+24,fntsel,6,2);
 			}
 
 			if ( i == 11 ) {
@@ -711,8 +818,13 @@ void *menu( void *ptr ) {
       ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
 
       cycles += Z80Emulate (&state, 200 /*cycles */ , NULL);
-      
-      for (int o = 0; o < (1000); o++) asm("nop"); //zpomlait
+
+      if (!snden) {
+      	for (int o = 0; o < (300); o++) asm("nop"); //zpomlait
+      } else {
+      	for (int o = 0; o < (300); o++) asm("nop"); //zpomlait
+      }
+
       /*
        This is really ugly hack to fire ZX refresh interrupt
        Changing this constant probably changes speed of the game. Who knows
@@ -725,7 +837,7 @@ void *menu( void *ptr ) {
 	fflush(stderr);
 	*/
 
-        if  ((ms-lms) > 20 )
+        if  (abs(ms-lms) > 20 )
 	//(cycles > 1024*10)
 	{
 	  handle_x(); // handle keyboard (keypad)
@@ -804,10 +916,11 @@ main ()
 
   const char *rtc = default_rtc;
 
-  pthread_t thread1, thread2;
+  pthread_t thread1, thread2, thread3;
   char *message1 = "Touchpad";
   char *message2 = "Menu";
-  int  iret1, iret2;
+  char *message3 = "Sound";
+  int  iret1, iret2, iret3,i;
 
   dev_init();			    // Initialize devices
 
@@ -817,6 +930,8 @@ main ()
                 fflush(stderr);
                 exit(errno);
         }
+	i = fcntl(rtc_fd, F_GETFL,0);
+	fcntl(rtc_fd, F_SETFL, i | O_NONBLOCK);
 
   for(x=0;x<10000;x++) asm("nop"); // Wait cycle before running threads
 
@@ -825,6 +940,7 @@ main ()
 
 	iret1 = pthread_create( &thread1, NULL, handle_touch, (void*) message1);
 	iret2 = pthread_create( &thread2, NULL, menu, (void*) message2);
+	iret3 = pthread_create( &thread3, NULL, do_sound, (void*) message3);
 
 	/* Wait till threads are complete before main continues. Unless we  */
 	/* wait we run the risk of executing an exit which will terminate   */
@@ -832,9 +948,11 @@ main ()
 
 	pthread_join( thread1, NULL);
 	pthread_join( thread2, NULL);
+	pthread_join( thread3, NULL);
 
         fprintf(stderr,"Thread 1 returns: %d\n",iret1);
         fprintf(stderr,"Thread 2 returns: %d\n",iret2);
+        fprintf(stderr,"Thread 3 returns: %d\n",iret3);
         fflush(stderr);
 
   }
