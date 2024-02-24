@@ -8,5 +8,9 @@
 4. Run `sudo make upload` to upload snapshots and rom files into the device.
     - We need super user, because this interfaces with ttyACM0.
 
+## Known Errors
+- Last known working versions are on Ubuntu 20.04
+    - Native compiler from Ubuntu 22.04 seems to not work for us. Beware.
+
 Further info
 - https://git.lsd.cat/g/pax-pwn
