@@ -5,11 +5,14 @@
 
 CC = arm-none-eabi-gcc
 CFLAGS = -Wall -fPIC -I /usr/arm-linux-gnueabi/include/
-LIBS =  /usr/arm-linux-gnueabi/lib/
+LIBS = /usr/arm-linux-gnueabi/lib/
+UPLOAD_COMMON_PATH = /data/app/MAINAPP
+PYTHON_UPLOADER_PATH = ../prolin-xcb-client/client.py
+PUSH_COMMAND = python3 $(PYTHON_UPLOADER_PATH) ACM0 push
 
 all: zxem
 
-rebuild: 
+rebuild:
 	make clean
 	make all
 
@@ -18,10 +21,10 @@ z80tables.h: maketables.c
 	./maketables > $@
 
 z80emu.o: z80emu.c z80emu.h z80config.h z80user.h \
-	z80instructions.h z80macros.h z80tables.h 
+	z80instructions.h z80macros.h z80tables.h
 	$(CC) $(CFLAGS) -c $<
 
-OBJECT_FILES = zxem.o z80emu.o 
+OBJECT_FILES = zxem.o z80emu.o
 #OBJECT_FILES += x11.o
 OBJECT_FILES += pax.o gui.o
 
@@ -34,12 +37,9 @@ clean:
 	rm -f *.o zxem maketables
 
 upload: zxem
-	. env/bin/activate; python3 ../prolin-xcb-client/client.py ACM0 push zxem /data/app/MAINAPP/lib/libosal.so
-	. env/bin/activate; python3 ../prolin-xcb-client/client.py ACM0 push zx48.rom /data/app/MAINAPP/zx48.rom
-	. env/bin/activate; python3 ../prolin-xcb-client/client.py ACM0 push manic.sna /data/app/MAINAPP/manic.sna
+	. env/bin/activate; make push
 
-# OLD, deprecated
 push: zxem
-	python3 ../../../prolin-xcb-client/client.py ACM0 push zxem /data/app/MAINAPP/lib/libosal.so
-	python3 ../../../prolin-xcb-client/client.py ACM0 push zx48.rom /data/app/MAINAPP/zx48.rom
-	python3 ../../../prolin-xcb-client/client.py ACM0 push manic.sna /data/app/MAINAPP/manic.sna
+	$(PUSH_COMMAND) zxem $(UPLOAD_COMMON_PATH)/lib/libosal.so
+	$(PUSH_COMMAND) zx48.rom $(UPLOAD_COMMON_PATH)/zx48.rom
+	$(PUSH_COMMAND) manic.sna $(UPLOAD_COMMON_PATH)/manic.sna
