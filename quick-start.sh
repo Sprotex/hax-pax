@@ -14,8 +14,9 @@ ensure_packages() {
   )
 
   packages_to_install=()
+
   for package in "${packages[@]}"; do
-    if ! dpkg -l | grep -q "$package"; then
+    if ! dpkg -l | grep -q "$package" || $force_install; then
       packages_to_install+=("$package")
     fi
   done
@@ -49,6 +50,35 @@ install_python_dependencies() {
   pip3 install -r requirements.txt
 }
 
+display_help_message() {
+  echo "Usage: quick-start.sh [-f | --force] [-h | --help]"
+  echo "  -f or --force to force install all packages"
+  echo "  -h or --help to show help message"
+}
+
+parse_arguments() {
+  for arg in "$@"; do
+    case $arg in
+    -f | --force)
+      force_install=true
+      shift
+      ;;
+    -h | --help)
+      display_help_message
+      exit 0
+      ;;
+    *)
+      echo "Invalid argument: $arg"
+      display_help_message
+      exit 1
+      ;;
+    esac
+  done
+}
+
+force_install=false
+
+parse_arguments "$@"
 ensure_packages
 ensure_uploader
 install_python_dependencies

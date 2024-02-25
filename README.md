@@ -7,6 +7,8 @@
 2. Run `source env/bin/activate` to activate the environment created in `quick-start.sh`.
 3. Run `sudo make upload` to upload the firmware to the device.
     - Make sure to run it with superuser privileges, as it interfaces with ttyACM0.
+4. Update variables at the top of `Makefile` to follow your paths.
+    - Intended for users moving to this repository with paths set to different files and folders.
 
 ## Known Errors
 - Last known working versions are on Ubuntu 20.04
