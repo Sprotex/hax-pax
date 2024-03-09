@@ -55,6 +55,7 @@ int kbdjoy=0;		// Keyboard or joystick
 int joyval=0;		// Default joy value
 int intcnt=0;		// Interrupt counter
 int flstate;		// Actual status of flash (0 or 1 alternates between INK and PAPER)
+int firstrun=1;		// Are we running for 1st time? If yes, load snap and run emulator
 
 char datetime[80];
 int sndstate=0;
@@ -699,10 +700,11 @@ void *menu( void *ptr ) {
   prev_sec = rtc_tm.tm_sec;
 
   ShowTime();
+  if (firstrun) LoadSNA("sna001.sna");
 
   /* Manage menu */
   while (1) {
-     	i = inkey();
+     	if (!firstrun) i = inkey();
         if (i == 2) {
 		zxout(254,0);
 		scr2lcd(0);
@@ -787,7 +789,7 @@ void *menu( void *ptr ) {
 		}
 
 	}
-	if ( (i == 6) || (i == 11) ) 
+	if ( (i == 6) || (i == 11) || firstrun ) 
 /* Emulate ZX Spectrum */
 {
  LoadROM();	// Load ROM again in case it was accidentialy overwritten
@@ -864,6 +866,7 @@ void *menu( void *ptr ) {
   ShowMenu();
   i=0;
   prev_sec=-1;
+  if (firstrun) firstrun=0;
 }
 /* End of emulation option */
 
