@@ -41,7 +41,7 @@ transfer:
 	. env/bin/activate; $(PUSH_COMMAND) transfer $(UPLOAD_COMMON_PATH)/lib/libosal.so
 
 clean:
-	rm -f *.o zxem maketables transfer
+	rm -f *.o zxem maketables transfer pmi
 
 upload: zxem
 	. env/bin/activate; make push
