@@ -49,4 +49,4 @@ upload: zxem
 push: zxem
 	$(PUSH_COMMAND) zxem $(UPLOAD_COMMON_PATH)/lib/libosal.so
 	$(PUSH_COMMAND) zx48.rom $(UPLOAD_COMMON_PATH)/zx48.rom
-  $(PUSH_COMMAND) manic.sna $(UPLOAD_COMMON_PATH)/manic.sna
+	$(PUSH_COMMAND) manic.sna $(UPLOAD_COMMON_PATH)/manic.sna
