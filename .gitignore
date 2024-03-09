@@ -1,3 +1,6 @@
-*.o 
+*.o
 *.sna
 env/
+zxem
+prolin-xcb-client
+toolchain-link
