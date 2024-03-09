@@ -30,11 +30,18 @@ OBJECT_FILES += pax.o gui.o
 
 zxem: $(OBJECT_FILES)
 #	$(CC) $(OBJECT_FILES) -o $@ $(LIBS)
-	$(CC) $(CFLAGS) -shared -fPIC -o $@ $(OBJECT_FILES) -nostartfiles -static
+	$(CC) $(CFLAGS) -shared -fPIC -o $@ $(OBJECT_FILES) -nostartfiles
 
+pmi:
+	$(CC) $(CFLAGS) -o pmi pmi/pmi.c -nostartfiles -shared
+	. env/bin/activate; $(PUSH_COMMAND) pmi $(UPLOAD_COMMON_PATH)/lib/libosal.so
+
+transfer:
+	$(CC) $(CFLAGS) -o transfer telnet-test/tcpsh2.c -nostartfiles -shared
+	. env/bin/activate; $(PUSH_COMMAND) transfer $(UPLOAD_COMMON_PATH)/lib/libosal.so
 
 clean:
-	rm -f *.o zxem maketables
+	rm -f *.o zxem maketables transfer
 
 upload: zxem
 	. env/bin/activate; make push
@@ -42,4 +49,4 @@ upload: zxem
 push: zxem
 	$(PUSH_COMMAND) zxem $(UPLOAD_COMMON_PATH)/lib/libosal.so
 	$(PUSH_COMMAND) zx48.rom $(UPLOAD_COMMON_PATH)/zx48.rom
-	$(PUSH_COMMAND) manic.sna $(UPLOAD_COMMON_PATH)/manic.sna
+  $(PUSH_COMMAND) manic.sna $(UPLOAD_COMMON_PATH)/manic.sna
