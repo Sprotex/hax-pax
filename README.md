@@ -10,6 +10,31 @@
 4. Update variables at the top of `Makefile` to follow your paths.
     - Intended for users moving to this repository with paths set to different files and folders.
 
+## Connecting your device
+The PAX device can be connected using a usb cable, or Wi-Fi connection. Make sure you have followed the [Quick start guide](#quick-start-guide) before continuing.
+
+### USB
+It should work out of the box. Only extra step needed is to connect the micro USB cable into the device and your computer.
+
+### Wi-Fi
+There are two main steps to ensure Wi-Fi connectivity.
+
+1. Connecting your device to your selected Wi-Fi:
+    1. In your PAX device, from diagostic menu, enter 1. System Config. Enter the default password.
+    2. On PAX device, press 3. WiFi
+    3. Make sure the Wi-Fi network you want to connect to runs on 2.4 GHz.
+    4. On PAX device, press 1. Auto Set, then select the SSID of your Wi-Fi network.
+    5. Use the device keyboard to enter the selected Wi-Fi network password. After a few seconds, it should display "Connect Success".
+    6. Depending on your network, select DHCP or Static.
+        - For this guide, we will assume DHCP on your network is enabled, so we continue by pressing 1. DHCP. If it succeeds, you will see the device IP address, netmask, network gateway and DNS server
+        - **IMPORTANT**: make sure, you remember or write down the IP address, it will be needed later.
+    7. Press red X button until Quit TM is shown on display. Your device is now connected to your selected Wi-Fi!
+2. Configuring the upload script to work on Wi-Fi:
+    1. Open [../prolin-xcb-client/client.py](../prolin-xcb-client/client.py)
+    2. Find line starting with port variable (around line 10)
+        - Change the variable to your IP address from step 1.6., followed by port number 5555
+        - So the line will look something like this: `port = '192.168.0.1:5555'`
+
 ## Known Errors
 - Last known working versions are on Ubuntu 20.04
     - Native compiler from Ubuntu 22.04 seems to not work for us. Beware.
