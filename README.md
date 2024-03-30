@@ -1,4 +1,4 @@
-# Enhanced MHI ZX Spectrum (ZXEM) emulator for PAX 920
+# PAX 920 reverse engineered kit (formerly Enhanced MHI ZXEM emulator)
 
 ## Quick start guide
 
@@ -9,6 +9,9 @@
     - Make sure to run it with superuser privileges, as it interfaces with ttyACM0.
 4. Update variables at the top of `Makefile` to follow your paths.
     - Intended for users moving to this repository with paths set to different files and folders.
+5. Connect to your device (instructions below), run `make <your_project>` (for example `make zxem`), and reload your terminal.
+
+Study the `Makefile` for more information how to run separate projects.
 
 ## Connecting your device
 The PAX device can be connected using a usb cable, or Wi-Fi connection. Make sure you have followed the [Quick start guide](#quick-start-guide) before continuing.
@@ -39,5 +42,11 @@ There are two main steps to ensure Wi-Fi connectivity.
 - Last known working versions are on Ubuntu 20.04
     - Native compiler from Ubuntu 22.04 seems to not work for us. Beware.
 
-Further info
+## Simple telnet client connection
+For ease of use, try the telnet functionality. Run `make telnet`, then connect to the telnet client in your shell of choice. The port of the telnet client is 2323.
+
+Example:
+`telnet 192.168.0.1 2323`
+
+## Further info
 - https://git.lsd.cat/g/pax-pwn

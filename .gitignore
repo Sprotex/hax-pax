@@ -1,7 +1,7 @@
 *.o
 *.d
-*.sna
+snapshots-roms/*
 env/
-zxem
+bin/
 prolin-xcb-client
 toolchain-link

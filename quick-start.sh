@@ -1,11 +1,16 @@
 ensure_packages() {
   packages=(
     "build-essential"
+    "cmake"
+    "exuberant-ctags"
     "g++-arm-linux-gnueabi"
     "gcc-arm-linux-gnueabi"
     "gcc-arm-none-eabi"
     "gcc"
+    "libsdl2-2.0-0"
+    "libsdl2-dev"
     "libssl-dev"
+    "pkg-config"
     "python3-dev"
     "python3-pip"
     "python3-venv"
