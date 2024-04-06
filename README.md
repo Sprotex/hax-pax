@@ -2,14 +2,15 @@
 
 ## Quick start guide
 
-1. Run `./quick-start.sh` to set up the environment.
+1. Clone or download the repository.
+2. Run `./quick-start.sh` to set up the environment.
     - This script will handle the virtual environment setup and execute the necessary commands.
-2. Run `source env/bin/activate` to activate the environment created in `quick-start.sh`.
-3. Run `sudo make upload` to upload the firmware to the device.
+3. Run `source env/bin/activate` to activate the environment created in `quick-start.sh`.
+4. Run `sudo make upload` to upload the firmware to the device.
     - Make sure to run it with superuser privileges, as it interfaces with ttyACM0.
-4. Update variables at the top of `Makefile` to follow your paths.
+5. Update variables at the top of `Makefile` to follow your paths.
     - Intended for users moving to this repository with paths set to different files and folders.
-5. Connect to your device (instructions below), run `make <your_project>` (for example `make zxem`), and reload your terminal.
+6. Connect to your device (instructions below), run `make <your_project>` (for example `make zxem`), and reload your terminal.
 
 Study the `Makefile` for more information how to run separate projects.
 
